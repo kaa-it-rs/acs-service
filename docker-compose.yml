@@ -1,0 +1,40 @@
+version: "3"
+
+networks:
+  common:
+    driver: bridge
+
+volumes:
+  data-volume:
+
+services:
+  mongodb:
+    image: mongo
+    environment:
+      - MONGO_INITDB_DATABASE=openers
+      - MONGO_INITDB_ROOT_USERNAME=tvhelp
+      - MONGO_INITDB_ROOT_PASSWORD=tvhelp
+    volumes:
+      - data-volume:/data/db
+      - ./mongo_init_script:/docker-entrypoint-initdb.d
+    ports:
+      - "0.0.0.0:27017-27019:27017-27019"
+    networks:
+      - common
+    restart: always
+
+  backend:
+    image: akruglov/acs-service
+    environment:
+      - DATABASE_URL=mongodb://openers:Q123456q@mongodb:27017/admin?authSource=openers
+      - JWT_SECRET_KEY=sgfjlksdjfwer9qfndlknfkljsdfh
+      - MODE=production
+    ports:
+      - "443:4000"
+      - "8765:8765"
+    volumes:
+      - /openers/dist:/openers/dist
+    networks:
+      - common
+    depends_on:
+      - mongodb
