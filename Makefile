@@ -1,4 +1,25 @@
-VERSION := 0.6.1
+VERSION := 0.7.0
+
+check:
+	cargo watch -x check -x test -x run
+
+coverage:
+	cargo tarpaulin --ignore-test
+
+fmt:
+	cargo fmt -- --check
+
+security:
+	cargo audit
+
+expand:
+	cargo expand
+
+udeps:
+	cargo +nightly udeps --all-targets
+
+test:
+	TEST_LOG=true cargo test | bunyan
 
 debug_up:
 	docker-compose -f docker-compose-debug.yml up -d
