@@ -19,7 +19,7 @@ async fn main() -> Result<()> {
 
   _ = init_tracer();
 
-  log::info!("dfsdfsdfdsfxx");
+  log::info!("dfsdfsdfdsfxxорлорлmhgfhgfhgfhbgdhgfh");
   let db = init_db().await?;
 
   let schema = create_schema_with_context(db.clone());

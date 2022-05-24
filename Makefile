@@ -1,7 +1,7 @@
 VERSION := 1.0.28
 
-check:
-	cargo watch -x check -x test -x run
+watch:
+	cargo watch -x 'check --color=always' -x 'test -- --color=always' -x run
 
 coverage:
 	cargo tarpaulin --ignore-test
