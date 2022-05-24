@@ -1,0 +1,5 @@
+make --dry-run --always-make --keep-going --print-directory
+make: Entering directory '/home/akruglov/Projects/acs-service-rs'
+cargo watch -x check -x test -x run
+make: Leaving directory '/home/akruglov/Projects/acs-service-rs'
+ 

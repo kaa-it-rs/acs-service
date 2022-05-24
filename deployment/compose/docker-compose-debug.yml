@@ -23,10 +23,27 @@ services:
       - common
     restart: always
 
+  jaeger:
+    image: jaegertracing/all-in-one:1.33
+    environment:
+      - COLLECTOR_ZIPKIN_HOST_PORT=:9411
+    ports:
+      - "5775:5775/udp"
+      - "6831:6831/udp"
+      - "5778:5778"
+      - "16686:16686"
+      - "14250:14250"
+      - "14268:14268"
+      - "14269:14269"
+      - "9411:9411"
+    networks:
+      - common
+    restart: always      
+
   backend:
     build:
-      context: ./
-      dockerfile: Dockerfile-debug
+      context: ../../
+      dockerfile: ./deployment/compose/Dockerfile-debug
     environment:
       - DATABASE_URL=mongodb://openers:Q123456q@mongodb:27017/admin?authSource=openers
       - JWT_SECRET_KEY=sgfjlksdjfwer9qfndlknfkljsdfh
@@ -35,10 +52,11 @@ services:
       - "4000:4000"
       - "8765:8765"
     volumes:
-      - ./:/app
+      - ../../:/app
       - /openers/dist:/openers/dist
     networks:
       - common
     depends_on:
       - mongodb
+      - jaeger
     restart: always

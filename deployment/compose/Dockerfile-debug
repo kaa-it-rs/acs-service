@@ -1,0 +1,5 @@
+FROM rust:1.61
+WORKDIR /app
+RUN cargo install cargo-watch
+# ENTRYPOINT cargo watch -x 'run'
+ENTRYPOINT cargo run --release
