@@ -1,8 +1,4 @@
 FROM rust:1.61
 WORKDIR /app
 RUN cargo install cargo-watch
-COPY ./deployment/compose/start_debug.sh ./
-#RUN chmod +x ./start_debug.sh
-# ENTRYPOINT cargo watch -x 'check --color=always' -x 'test -- --color=always' -x run
-# ENTRYPOINT cargo run --release
 CMD [ "/bin/sh", "-c", "while true; do sleep 30s; done" ]
