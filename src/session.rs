@@ -152,5 +152,7 @@ impl WsOpenerSession {
 impl Handler<super::server::dsl::Message> for WsOpenerSession {
     type Result = ();
 
-    fn handle(&mut self, _: super::server::dsl::Message, _: &mut Self::Context) {}
+    fn handle(&mut self, _: super::server::dsl::Message, _ctx: &mut Self::Context) {
+			//_ctx.text(text)
+		}
 }
