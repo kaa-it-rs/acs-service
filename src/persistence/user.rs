@@ -24,7 +24,7 @@ pub(crate) struct UserEntity {
     pub role_id: ObjectId,
 }
 
-pub(crate) async fn get_user_by_login(db: &Database, login: &String) -> Result<Option<UserEntity>> {
+pub(crate) async fn get_user_by_login(db: &Database, login: &str) -> Result<Option<UserEntity>> {
     let users = db.collection::<UserEntity>("users");
 
     let user = users
@@ -39,7 +39,7 @@ pub(crate) async fn get_user_by_login(db: &Database, login: &String) -> Result<O
     Ok(user)
 }
 
-pub(crate) async fn get_user_by_id(db: &Database, id: &String) -> Result<Option<UserEntity>> {
+pub(crate) async fn get_user_by_id(db: &Database, id: &str) -> Result<Option<UserEntity>> {
     let users = db.collection::<UserEntity>("users");
 
     let user = users
@@ -58,7 +58,7 @@ pub(crate) async fn get_users_by_id(db: &Database, ids: &[String]) -> Result<Vec
     let users = db.collection::<UserEntity>("users");
 
     let ids = ids
-        .into_iter()
+        .iter()
         .map(|k| ObjectId::from_str(k).map_err(anyhow::Error::from))
         .collect::<Result<Vec<ObjectId>>>()?;
 

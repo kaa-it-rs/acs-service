@@ -3,11 +3,17 @@ VERSION := 1.0.28
 watch:
 	cargo watch -x 'check --color=always' -x 'test -- --color=always' -x run
 
+clippy:
+	cargo clippy --all --all-features --tests -- -D warnings
+
 coverage:
 	cargo tarpaulin --ignore-test
 
-fmt:
+fmt_check:
 	cargo fmt -- --check
+
+fmt:
+	cargo fmt --all
 
 security:
 	cargo audit

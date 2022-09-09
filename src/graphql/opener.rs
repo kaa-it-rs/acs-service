@@ -36,9 +36,7 @@ pub(crate) struct Opener {
 #[ComplexObject]
 impl Opener {
     async fn owner(&self, ctx: &Context<'_>) -> Option<NestedUserResult> {
-        if self.user_id.is_none() {
-            return None;
-        }
+        self.user_id.as_ref()?;
 
         let user_id = self.user_id.as_ref().unwrap();
 
@@ -199,10 +197,11 @@ impl OpenerMutation {
     ) -> CreateOpenerResult {
         let db = ctx.data::<Database>().expect("Can't get db connection");
 
-        match check_token(ctx, |role| role.access_rights.openers.create).await {
-            CheckTokenResult::Err(e) => return e.into(),
-            _ => {}
-        };
+        if let CheckTokenResult::Err(e) =
+            check_token(ctx, |role| role.access_rights.openers.create).await
+        {
+            return e.into();
+        }
 
         let new_opener_entity = NewOpenerEntity {
             serial_number: opener.serial_number,
@@ -324,14 +323,12 @@ impl OpenerQuery {
                 CheckTokenResult::Ok { claims, role_name } => (claims, role_name),
             };
 
-        let opener = match get_opener_by_id(db, &id.to_string()).await {
+        let opener = match get_opener_by_id(db, &id).await {
             Err(e) => return Some(OpenerResult::InternalServerError(e.into())),
             Ok(o) => o,
         };
 
-        if opener.is_none() {
-            return None;
-        }
+        opener.as_ref()?;
 
         let opener = opener.unwrap();
 
@@ -390,8 +387,8 @@ impl From<&OpenerEntity> for Opener {
             version: opener.version.clone(),
             alias: opener.alias.clone(),
             description: opener.description.clone(),
-            lat: opener.lat.clone(),
-            lng: opener.lng.clone(),
+            lat: opener.lat,
+            lng: opener.lng,
             login: opener.login.clone(),
             password: opener.password.clone(),
             connected: opener.connected,
@@ -460,15 +457,11 @@ impl OpenerSubscription {
 
                 let res = if role.name == "admin" {
                     true
-                } else if role.name == "manufacturer" {
+                } else if role.name == "manufacturer" || event.user_id.is_none() {
                     false
                 } else {
-                    if event.user_id.is_none() {
-                        false
-                    } else {
-                        let user_id = event.user_id.as_ref().unwrap().clone();
-                        user_id == claims.user_id
-                    }
+                    let user_id = event.user_id.as_ref().unwrap().clone();
+                    user_id == claims.user_id
                 };
 
                 async move { res }

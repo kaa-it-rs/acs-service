@@ -83,14 +83,12 @@ impl UserQuery {
             return Some(e.into());
         }
 
-        let user = match get_user_by_id(db, &id.to_string()).await {
+        let user = match get_user_by_id(db, &id).await {
             Err(e) => return Some(UserResult::InternalServerError(e.into())),
             Ok(u) => u,
         };
 
-        if user.is_none() {
-            return None;
-        }
+        user.as_ref()?;
 
         let user = user.unwrap();
 

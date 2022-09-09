@@ -107,7 +107,6 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for WsOpenerSession {
 
                     t => {
                         log::error!("Unsupported message type: {}", t);
-                        return;
                     }
                 }
             }
@@ -153,6 +152,6 @@ impl Handler<super::server::dsl::Message> for WsOpenerSession {
     type Result = ();
 
     fn handle(&mut self, _: super::server::dsl::Message, _ctx: &mut Self::Context) {
-			//_ctx.text(text)
-		}
+        //_ctx.text(text)
+    }
 }

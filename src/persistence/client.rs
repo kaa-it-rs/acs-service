@@ -18,7 +18,7 @@ const REFRESH_TOKEN_DURATION_IN_MINUTES: i64 = 1440;
 pub(crate) async fn create_client(
     db: &Database,
     refresh_token: String,
-    user_id: &String,
+    user_id: &str,
 ) -> Result<()> {
     let clients = db.collection::<ClientEntity>("clients");
 

@@ -61,10 +61,10 @@ pub(crate) fn get_claims(http_request: HttpRequest) -> Result<Option<Claims>> {
 
 pub(crate) fn is_expired_error(err: &Error) -> bool {
     if let Some(jwt_error) = err.downcast_ref::<jsonwebtoken::errors::Error>() {
-        return match jwt_error.kind() {
-            &jsonwebtoken::errors::ErrorKind::ExpiredSignature => true,
-            _ => false,
-        };
+        return matches!(
+            jwt_error.kind(),
+            &jsonwebtoken::errors::ErrorKind::ExpiredSignature
+        );
     }
 
     false
@@ -72,7 +72,7 @@ pub(crate) fn is_expired_error(err: &Error) -> bool {
 
 fn decode_token(token: &str) -> Result<TokenData<Claims>> {
     Ok(decode::<Claims>(
-        &token,
+        token,
         &DecodingKey::from_secret(JWT_SECRET_KEY.as_ref()),
         &Validation::default(),
     )?)

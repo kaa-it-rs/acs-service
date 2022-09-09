@@ -33,7 +33,7 @@ pub(crate) struct RoleEntity {
     pub created_at: bson::DateTime,
 }
 
-pub(crate) async fn get_role_by_id(db: &Database, id: &String) -> Result<Option<RoleEntity>> {
+pub(crate) async fn get_role_by_id(db: &Database, id: &str) -> Result<Option<RoleEntity>> {
     let roles = db.collection::<RoleEntity>("roles");
 
     let role = roles
@@ -52,7 +52,7 @@ pub(crate) async fn get_roles_by_id(db: &Database, ids: &[String]) -> Result<Vec
     let roles = db.collection::<RoleEntity>("roles");
 
     let ids = ids
-        .into_iter()
+        .iter()
         .map(|k| ObjectId::from_str(k).map_err(anyhow::Error::from))
         .collect::<Result<Vec<ObjectId>>>()?;
 

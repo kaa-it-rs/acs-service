@@ -95,7 +95,7 @@ pub(crate) async fn update_opener(
     if new_opener.user_id.is_some() {
         opener.insert(
             "userId",
-            ObjectId::from_str(&new_opener.user_id.as_ref().unwrap())?,
+            ObjectId::from_str(new_opener.user_id.as_ref().unwrap())?,
         );
     }
 
@@ -108,11 +108,11 @@ pub(crate) async fn update_opener(
     }
 
     if new_opener.lat.is_some() {
-        opener.insert("lat", new_opener.lat.clone());
+        opener.insert("lat", new_opener.lat);
     }
 
     if new_opener.lng.is_some() {
-        opener.insert("lng", new_opener.lng.clone());
+        opener.insert("lng", new_opener.lng);
     }
 
     if new_opener.login.is_some() {
@@ -132,7 +132,7 @@ pub(crate) async fn update_opener(
     }
 
     if new_opener.connected.is_some() {
-        opener.insert("connected", new_opener.connected.clone());
+        opener.insert("connected", new_opener.connected);
     }
 
     let filter = doc! {
@@ -150,7 +150,7 @@ pub(crate) async fn update_opener(
     Ok(openers.find_one(filter, None).await?.unwrap())
 }
 
-pub(crate) async fn get_opener_by_id(db: &Database, id: &String) -> Result<Option<OpenerEntity>> {
+pub(crate) async fn get_opener_by_id(db: &Database, id: &str) -> Result<Option<OpenerEntity>> {
     let openers = db.collection::<OpenerEntity>("openers");
 
     let opener = openers

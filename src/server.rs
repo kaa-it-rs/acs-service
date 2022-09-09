@@ -83,10 +83,7 @@ impl OpenerServer {
         SimpleBroker::publish(OpenerConnectionChanged {
             serial_number: msg.serial_number.clone(),
             connected: true,
-            user_id: match opener.user_id {
-                Some(user_id) => Some(user_id.to_string()),
-                None => None,
-            },
+            user_id: opener.user_id.map(|user_id| user_id.to_string()),
         });
 
         Ok(())
@@ -138,10 +135,7 @@ impl OpenerServer {
         SimpleBroker::publish(OpenerConnectionChanged {
             serial_number: msg.id.clone(),
             connected: false,
-            user_id: match opener.user_id {
-                Some(user_id) => Some(user_id.to_string()),
-                None => None,
-            },
+            user_id: opener.user_id.map(|user_id| user_id.to_string()),
         });
 
         Ok(())

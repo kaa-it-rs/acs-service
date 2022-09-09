@@ -119,14 +119,12 @@ impl RoleQuery {
             return Some(e.into());
         }
 
-        let role = match get_role_by_id(db, &id.to_string()).await {
+        let role = match get_role_by_id(db, &id).await {
             Err(e) => return Some(RoleResult::InternalServerError(e.into())),
             Ok(r) => r,
         };
 
-        if role.is_none() {
-            return None;
-        }
+        role.as_ref()?;
 
         let role = role.unwrap();
 
