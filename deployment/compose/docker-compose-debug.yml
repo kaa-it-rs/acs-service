@@ -53,7 +53,7 @@ services:
     security_opt:
       - seccomp:unconfined  
     ports:
-      - "4000:4000"
+      - "8081:4000"
       - "8765:8765"
     volumes:
       - ../../:/app

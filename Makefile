@@ -1,7 +1,7 @@
 VERSION := 1.0.28
 
-watch:
-	cargo watch -x 'check --color=always' -x 'test -- --color=always' -x run
+watch_service:
+	cargo watch -x 'check --color=always' -x 'test -- --color=always' -x 'run -p acs-service'
 
 clippy:
 	cargo clippy --all --all-features --tests -- -D warnings
@@ -28,7 +28,7 @@ test:
 	TEST_LOG=true cargo test | bunyan
 
 debug_up:
-	docker compose -p acs-service-rs -f ./deployment/compose/docker-compose-debug.yml up -d
+	docker-compose -p acs-service-rs -f ./deployment/compose/docker-compose-debug.yml up -d
 
 debug_down:
 	docker compose -p acs-service-rs -f ./deployment/compose/docker-compose-debug.yml down --remove-orphans
@@ -53,3 +53,8 @@ down:
 	docker compose -p acs-service-rs -f ./deployment/compose/docker-compose.yml down
 
 restart: down up
+
+run_service:
+	cargo run -p acs-service
+
+  	

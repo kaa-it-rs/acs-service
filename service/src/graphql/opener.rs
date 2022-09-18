@@ -62,7 +62,7 @@ impl Opener {
 
 #[derive(Union)]
 enum OpenerResult {
-    Opener(Opener),
+    Opener(Box<Opener>),
     InternalServerError(InternalServerError),
     UnauthorizedError(UnauthorizedError),
     PermissionDeniedError(PermissionDeniedError),
@@ -109,7 +109,7 @@ impl From<Error> for OpenersResult {
 
 #[derive(Union)]
 enum CreateOpenerResult {
-    Opener(Opener),
+    Opener(Box<Opener>),
     InternalServerError(InternalServerError),
     UnauthorizedError(UnauthorizedError),
     PermissionDeniedError(PermissionDeniedError),
@@ -132,7 +132,7 @@ impl From<Error> for CreateOpenerResult {
 
 #[derive(Union)]
 enum UpdateOpenerResult {
-    Opener(Opener),
+    Opener(Box<Opener>),
     InternalServerError(InternalServerError),
     UnauthorizedError(UnauthorizedError),
     PermissionDeniedError(PermissionDeniedError),
@@ -219,7 +219,7 @@ impl OpenerMutation {
             Ok(opener) => opener,
         };
 
-        CreateOpenerResult::Opener(Opener::from(&opener))
+        CreateOpenerResult::Opener(Box::new(Opener::from(&opener)))
     }
 
     async fn update_opener(
@@ -305,7 +305,7 @@ impl OpenerMutation {
             Ok(o) => o,
         };
 
-        UpdateOpenerResult::Opener(Opener::from(&opener))
+        UpdateOpenerResult::Opener(Box::new(Opener::from(&opener)))
     }
 }
 
@@ -335,14 +335,14 @@ impl OpenerQuery {
         // Admin can view any opener
 
         if token.1 == "admin" {
-            return Some(OpenerResult::Opener(Opener::from(&opener)));
+            return Some(OpenerResult::Opener(Box::new(Opener::from(&opener))));
         }
 
         // Others can view only theirs openers
 
         if let Some(user_id) = opener.user_id {
             if user_id.to_string() == token.0.user_id {
-                return Some(OpenerResult::Opener(Opener::from(&opener)));
+                return Some(OpenerResult::Opener(Box::new(Opener::from(&opener))));
             }
         }
 

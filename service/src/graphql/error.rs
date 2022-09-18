@@ -117,6 +117,7 @@ impl<T: Display> From<T> for NoUpdateDataProvidedError {
 
 #[derive(Interface)]
 #[graphql(field(name = "message", type = "String"))]
+#[allow(clippy::enum_variant_names)]
 pub(crate) enum Error {
     InternalServerError(InternalServerError),
     UnauthorizedError(UnauthorizedError),

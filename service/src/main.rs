@@ -44,7 +44,7 @@ async fn main() -> Result<()> {
                     .to(index_subscriptions),
             )
             .route("/count/", web::get().to(get_count))
-            .service(web::resource("/ws/").to(ws_route))
+            .service(web::resource("/ws").to(ws_route))
     })
     .bind("0.0.0.0:4000")?
     .run()

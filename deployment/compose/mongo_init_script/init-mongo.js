@@ -151,21 +151,21 @@ db.createCollection("users");
 db.users.createIndex({ login: 1 }, { name: "login", unique: true });
 db.users.insert({
   login: "localadmin",
-  password: "$2a$04$HgLuKmwaOzo6U81YPKnt/uVJXZCAYtZLFYLBI.7XlySLT7P/zLf5O",
+  password: "$2a$04$HgLuKmwaOzo6U81YPKnt/uVJXZCAYtZLFYLBI.7XlySLT7P/zLf5O", // 1QaZ2WsX
   roleId: db.roles.findOne({ name: "admin" })["_id"],
   createdAt: now,
   updatedAt: now,
 });
 db.users.insert({
   login: "manufacturer",
-  password: "$2a$04$/ZdiGm3P7.j4xUTn4RwQwOfUArRBLgpjMTlcIVLI16NOXjLzd7wba",
+  password: "$2a$04$e/ppod6d6oQtbKf25J0GSO9dw49Iddola8M6MyS.TYtcAEjBAmx2C", // 123321
   roleId: db.roles.findOne({ name: "manufacturer" })["_id"],
   createdAt: now,
   updatedAt: now,
 });
 db.users.insert({
   login: "vasya",
-  password: "$2b$04$qm2TWn6N3SFOLat1fXvFmuhaGmQJvaAhMw1vzfWE3oTOx5ed0AEWy",
+  password: "$2a$04$U/TsFOoRLibYXepiyy5Ehe/0ZDN1NjJetYP7EDXZqwtsVYNWrRXXu", // 123456
   roleId: db.roles.findOne({ name: "normal" })["_id"],
   createdAt: now,
   updatedAt: now,
@@ -177,15 +177,13 @@ db.clients.createIndex(
   { name: "refreshToken", unique: true }
 );
 
-
-db.createCollection("barrierManufacturers");
-db.openers.createIndex(
-  { name: 1 },
-  { name: "name", unique: true }
-);
-
-db.createCollection("barrierModels");
-db.openers.createIndex(
-  { name: 1 },
-  { name: "name", unique: true }
-);
+db.openers.insert({
+  serialNumber: "111",
+  connected: false,
+  login: "admin",
+  password: "admin",
+  createdAt: now,
+  updatedAt: now,
+  version: "1.0.2",
+  nonce: "jdfjksdhfjshfkjsdhkfhk",
+});

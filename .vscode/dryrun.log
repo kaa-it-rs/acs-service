@@ -1,5 +1,5 @@
 make --dry-run --always-make --keep-going --print-directory
-make: Entering directory '/home/akruglov/Projects/acs-service-rs'
-cargo watch -x 'check --color=always' -x 'test -- --color=always' -x run
-make: Leaving directory '/home/akruglov/Projects/acs-service-rs'
+make: Entering directory '/home/akruglov/Projects/Rust/acs-service'
+cargo watch -x 'check --color=always' -x 'test -- --color=always' -x 'run -p acs-service'
+make: Leaving directory '/home/akruglov/Projects/Rust/acs-service'
  

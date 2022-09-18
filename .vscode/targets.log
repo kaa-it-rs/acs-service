@@ -1,245 +1,243 @@
 make all --print-data-base --no-builtin-variables --no-builtin-rules --question
-make: *** No rule to make target 'all'.  Stop.
-
-# GNU Make 4.2.1
+# GNU Make 4.3
 # Built for x86_64-pc-linux-gnu
-# Copyright (C) 1988-2016 Free Software Foundation, Inc.
+# Copyright (C) 1988-2020 Free Software Foundation, Inc.
 # License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
 # This is free software: you are free to change and redistribute it.
 # There is NO WARRANTY, to the extent permitted by law.
 
-# Make data base, printed on Thu Sep  8 17:27:10 2022
+# Make data base, printed on Mon Sep 19 02:58:28 2022
 
 # Variables
 
-# automatic
-<D = $(patsubst %/,%,$(dir $<))
-# automatic
-?F = $(notdir $?)
 # environment
-DESKTOP_SESSION = cinnamon
-# default
-.SHELLFLAGS := -c
+GDK_BACKEND = x11
 # environment
-XDG_SESSION_CLASS = user
+LC_ALL = C
 # environment
-XDG_SESSION_TYPE = x11
+GNOME_SHELL_SESSION_MODE = ubuntu
 # environment
-NVM_INC = /home/akruglov/.nvm/versions/node/v16.11.1/include/node
-# automatic
-?D = $(patsubst %/,%,$(dir $?))
-# environment
-GTK3_MODULES = xapp-gtk3-module
-# automatic
-@D = $(patsubst %/,%,$(dir $@))
-# environment
-XAUTHORITY = /home/akruglov/.Xauthority
-# environment
-GDMSESSION = cinnamon
-# default
-MAKE_VERSION := 4.2.1
-# makefile
-CURDIR := /home/akruglov/Projects/acs-service-rs
-# makefile
-SHELL = /bin/sh
-# environment
-GDM_LANG = en_US
-# environment
-VSCODE_NLS_CONFIG = {"locale":"en-us","availableLanguages":{},"_languagePackSupport":true}
-# environment
-_ = /usr/share/code/code
-# environment
-XDG_CONFIG_DIRS = /etc/xdg/xdg-cinnamon:/etc/xdg
-# environment
-GTK_OVERLAY_SCROLLING = 1
-# makefile (from 'Makefile', line 1)
-MAKEFILE_LIST :=  Makefile
-# automatic
-@F = $(notdir $@)
-# environment
-GIO_LAUNCHED_DESKTOP_FILE = /usr/share/applications/code.desktop
-# 'override' directive
-GNUMAKEFLAGS := 
-# environment
-MANDATORY_PATH = /usr/share/gconf/cinnamon.mandatory.path
-# environment
-XDG_DATA_DIRS = /usr/share/cinnamon:/usr/share/gnome:/home/akruglov/.local/share/flatpak/exports/share:/var/lib/flatpak/exports/share:/usr/local/share:/usr/share
-# environment
-DBUS_SESSION_BUS_ADDRESS = unix:path=/run/user/1000/bus
-# makefile (from 'Makefile', line 1)
-VERSION := 1.0.28
-# environment
-LC_NAME = ru_RU.UTF-8
-# environment
-VSCODE_CWD = /home/akruglov
-# environment
-XDG_SESSION_PATH = /org/freedesktop/DisplayManager/Session0
-# default
-MAKE_HOST := x86_64-pc-linux-gnu
-# environment
-PATH = /home/akruglov/node_modules/.bin:/home/akruglov/.nvm/versions/node/v16.11.1/bin:/home/akruglov/bin/flutter/bin:/home/akruglov/bin/go/bin:/home/akruglov/go/bin:/home/akruglov/.cargo/bin:/home/akruglov/.local/bin:/home/akruglov/bin:/opt/hisi-linux/x86-arm/arm-himix200-linux/bin:/opt/hisi-linux/x86-arm/arm-hisiv500-linux/target/bin:/opt/hisi-linux/x86-arm/arm-hisiv300-linux/target/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/home/akruglov/.local/share/JetBrains/Toolbox/scripts
-# environment
-GPG_AGENT_INFO = /run/user/1000/gnupg/S.gpg-agent:0:1
+SSH_AGENT_LAUNCHER = gnome-keyring
 # environment
 GJS_DEBUG_OUTPUT = stderr
 # environment
+MANDATORY_PATH = /usr/share/gconf/ubuntu-xorg.mandatory.path
+# environment
+LC_NAME = ru_RU.UTF-8
+# environment
+LC_NUMERIC = ru_RU.UTF-8
+# environment
+VSCODE_CWD = /home/akruglov
+# environment
+WINDOWPATH = 2
+# environment
+NVM_DIR = /home/akruglov/.nvm
+# environment
+LC_ADDRESS = ru_RU.UTF-8
+# environment
+LIBVIRT_DEFAULT_URI = qemu:///system
+# default
+MAKE_COMMAND := make
+# environment
+QT_ACCESSIBILITY = 1
+# automatic
+@D = $(patsubst %/,%,$(dir $@))
+# environment
+VSCODE_HANDLES_UNCAUGHT_ERRORS = true
+# default
+.VARIABLES := 
+# environment
+PWD = /home/akruglov/Projects/Rust/acs-service
+# automatic
+%D = $(patsubst %/,%,$(dir $%))
+# environment
 LSCOLORS = Gxfxcxdxbxegedabagacad
 # environment
-SESSION_MANAGER = local/akruglov-dev:@/tmp/.ICE-unix/2272,unix/akruglov-dev:/tmp/.ICE-unix/2272
+XDG_DATA_DIRS = /usr/share/ubuntu-xorg:/usr/share/gnome:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop
 # environment
-XDG_RUNTIME_DIR = /run/user/1000
-# environment
-NVM_BIN = /home/akruglov/.nvm/versions/node/v16.11.1/bin
-# environment
-ELECTRON_RUN_AS_NODE = 1
-# default
-.FEATURES := target-specific order-only second-expansion else-if shortest-stem undefine oneshell archives jobserver output-sync check-symlink load
-# environment
-XDG_GREETER_DATA_DIR = /var/lib/lightdm-data/akruglov
-# environment
-LS_COLORS = 
-# environment
-XDG_SESSION_DESKTOP = cinnamon
-# environment
-SSH_AUTH_SOCK = /run/user/1000/keyring/ssh
-# environment
-GIO_LAUNCHED_DESKTOP_FILE_PID = 70313
+OLDPWD = /home/akruglov
+# automatic
+^D = $(patsubst %/,%,$(dir $^))
 # automatic
 %F = $(notdir $%)
 # environment
-DISPLAY = :0
+NVM_INC = /home/akruglov/.nvm/versions/node/v16.3.0/include/node
 # environment
-PWD = /home/akruglov/Projects/acs-service-rs
+VSCODE_CODE_CACHE_PATH = /home/akruglov/.config/Code/CachedData/74b1f979648cc44d385a2286793c226e611f59e7
 # environment
-QT_QPA_PLATFORMTHEME = qt5ct
+LANG = C
+# environment
+XAUTHORITY = /run/user/1000/gdm/Xauthority
 # default
 .LOADED := 
+# default
+.INCLUDE_DIRS = /usr/local/include /usr/include /usr/include
+# makefile
+MAKEFLAGS = pqrR
+# makefile
+CURDIR := /home/akruglov/Projects/Rust/acs-service
 # environment
-XDG_SEAT = seat0
+APPLICATION_INSIGHTS_NO_DIAGNOSTIC_CHANNEL = 1
+# automatic
+*D = $(patsubst %/,%,$(dir $*))
+# makefile (from 'Makefile', line 1)
+VERSION := 1.0.28
 # environment
-SSH_AGENT_PID = 2448
+MFLAGS = -pqrR
 # environment
-ORIGINAL_XDG_CURRENT_DESKTOP = X-Cinnamon
+SSH_AUTH_SOCK = /run/user/1000/keyring/ssh
+# default
+.SHELLFLAGS := -c
+# environment
+NVM_BIN = /home/akruglov/.nvm/versions/node/v16.3.0/bin
+# environment
+XDG_CONFIG_DIRS = /etc/xdg/xdg-ubuntu-xorg:/etc/xdg
+# automatic
++D = $(patsubst %/,%,$(dir $+))
+# environment
+XDG_SESSION_DESKTOP = ubuntu-xorg
+# makefile (from 'Makefile', line 1)
+MAKEFILE_LIST := Makefile
+# automatic
+@F = $(notdir $@)
+# environment
+ZSH = /home/akruglov/.oh-my-zsh
+# environment
+VSCODE_PID = 103576
+# environment
+XDG_SESSION_TYPE = x11
+# automatic
+?D = $(patsubst %/,%,$(dir $?))
+# environment
+SESSION_MANAGER = local/akruglov-dev:@/tmp/.ICE-unix/4193,unix/akruglov-dev:/tmp/.ICE-unix/4193
+# automatic
+*F = $(notdir $*)
+# environment
+CHROME_DESKTOP = code-url-handler.desktop
+# environment
+DBUS_SESSION_BUS_ADDRESS = unix:path=/run/user/1000/bus
+# automatic
+<D = $(patsubst %/,%,$(dir $<))
+# environment
+VSCODE_NLS_CONFIG = {"locale":"en-us","availableLanguages":{},"_languagePackSupport":true}
+# default
+MAKE_HOST := x86_64-pc-linux-gnu
+# environment
+GNOME_DESKTOP_SESSION_ID = this-is-deprecated
+# makefile
+SHELL = /bin/sh
+# default
+MAKECMDGOALS := all
+# environment
+XMODIFIERS = @im=ibus
+# environment
+GJS_DEBUG_TOPICS = JS ERROR;JS LOG
+# environment
+SHLVL = 0
+# environment
+MAKELEVEL := 0
+# default
+MAKE = $(MAKE_COMMAND)
+# environment
+PATH = /home/akruglov/.nvm/versions/node/v16.3.0/bin:/home/akruglov/bin/flutter/bin:/home/akruglov/bin/go/bin:/home/akruglov/go/bin:/home/akruglov/.cargo/bin:/home/akruglov/.local/bin:/home/akruglov/bin:/opt/hisi-linux/x86-arm/arm-himix200-linux/bin:/opt/hisi-linux/x86-arm/arm-hisiv500-linux/target/bin:/opt/hisi-linux/x86-arm/arm-hisiv300-linux/target/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/snap/bin:/home/akruglov/.local/share/JetBrains/Toolbox/scripts
+# default
+MAKEFILES := 
+# environment
+LC_MONETARY = ru_RU.UTF-8
+# automatic
+^F = $(notdir $^)
+# environment
+LC_TIME = ru_RU.UTF-8
+# environment
+INVOCATION_ID = 37b004869e98493f82599d5f5331c938
+# environment
+USERNAME = akruglov
+# environment
+LC_TELEPHONE = ru_RU.UTF-8
+# automatic
+?F = $(notdir $?)
+# environment
+XDG_CURRENT_DESKTOP = Unity
+# environment
+LS_COLORS = 
+# automatic
++F = $(notdir $+)
+# environment
+LESS = -R
+# environment
+DESKTOP_SESSION = ubuntu-xorg
+# environment
+ORIGINAL_XDG_CURRENT_DESKTOP = ubuntu:GNOME
+# 'override' directive
+GNUMAKEFLAGS := 
+# environment
+LOGNAME = akruglov
+# environment
+GIO_LAUNCHED_DESKTOP_FILE = /usr/share/applications/code.desktop
+# makefile
+.DEFAULT_GOAL := watch_service
+# environment
+SYSTEMD_EXEC_PID = 4212
+# environment
+DISPLAY = :0
+# environment
+USER = akruglov
 # environment
 GTK_MODULES = gail:atk-bridge
+# environment
+DEFAULTS_PATH = /usr/share/gconf/ubuntu-xorg.default.path
+# default
+MAKE_VERSION := 4.3
+# environment
+MANAGERPID = 3959
+# environment
+LC_MEASUREMENT = ru_RU.UTF-8
+# environment
+GIO_LAUNCHED_DESKTOP_FILE_PID = 103576
+# environment
+PAGER = less
+# environment
+_ = /usr/share/code/code
+# environment
+LC_PAPER = ru_RU.UTF-8
+# environment
+XDG_RUNTIME_DIR = /run/user/1000
+# environment
+GPG_AGENT_INFO = /run/user/1000/gnupg/S.gpg-agent:0:1
+# environment
+NVM_CD_FLAGS = -q
+# environment
+JOURNAL_STREAM = 8:45710
+# environment
+XDG_SESSION_CLASS = user
 # environment
 VSCODE_AMD_ENTRYPOINT = vs/workbench/api/node/extensionHostProcess
 # environment
 HOME = /home/akruglov
 # environment
-VSCODE_CODE_CACHE_PATH = /home/akruglov/.config/Code/CachedData/784b0177c56c607789f9638da7b6bf3230d47a8c
+QT_IM_MODULE = ibus
 # environment
-LOGNAME = akruglov
+ELECTRON_RUN_AS_NODE = 1
 # environment
-APPLICATION_INSIGHTS_NO_DIAGNOSTIC_CHANNEL = 1
+VSCODE_IPC_HOOK = /run/user/1000/vscode-704b6308-1.71.2-main.sock
 # environment
-NVM_CD_FLAGS = -q
-# automatic
-+F = $(notdir $+)
-# environment
-ZSH = /home/akruglov/.oh-my-zsh
-# environment
-VSCODE_HANDLES_UNCAUGHT_ERRORS = true
-# environment
-GNOME_DESKTOP_SESSION_ID = this-is-deprecated
-# automatic
-^D = $(patsubst %/,%,$(dir $^))
-# environment
-XDG_VTNR = 7
-# environment
-MAKELEVEL := 0
-# default
-MAKE = $(MAKE_COMMAND)
-# default
-MAKECMDGOALS := all
-# environment
-SHLVL = 0
-# environment
-XDG_SESSION_ID = c2
-# environment
-USER = akruglov
-# environment
-LC_MONETARY = ru_RU.UTF-8
-# makefile
-.DEFAULT_GOAL := watch
-# environment
-XDG_CURRENT_DESKTOP = X-Cinnamon
-# environment
-LESS = -R
-# automatic
-%D = $(patsubst %/,%,$(dir $%))
-# environment
-LC_TELEPHONE = ru_RU.UTF-8
-# default
-MAKE_COMMAND := make
-# environment
-OLDPWD = /home/akruglov
-# default
-.VARIABLES := 
-# automatic
-*F = $(notdir $*)
-# environment
-LANGUAGE = en_US
-# environment
-XDG_SEAT_PATH = /org/freedesktop/DisplayManager/Seat0
-# environment
-VSCODE_IPC_HOOK = /run/user/1000/vscode-704b6308-1.71.0-main.sock
-# makefile
-MAKEFLAGS = pqrR
-# environment
-MFLAGS = -pqrR
-# automatic
-*D = $(patsubst %/,%,$(dir $*))
-# environment
-NVM_DIR = /home/akruglov/.nvm
-# automatic
-+D = $(patsubst %/,%,$(dir $+))
-# environment
-GDK_BACKEND = x11
-# environment
-LC_PAPER = ru_RU.UTF-8
-# environment
-CINNAMON_VERSION = 5.2.7
-# environment
-QT_ACCESSIBILITY = 1
-# environment
-DEFAULTS_PATH = /usr/share/gconf/cinnamon.default.path
-# environment
-SOLARIZED_THEME = light
-# default
-MAKEFILES := 
-# environment
-LC_NUMERIC = ru_RU.UTF-8
-# automatic
-<F = $(notdir $<)
-# environment
-LC_MEASUREMENT = ru_RU.UTF-8
-# environment
-PAGER = less
-# environment
-LC_ALL = C
-# environment
-GJS_DEBUG_TOPICS = JS ERROR;JS LOG
-# automatic
-^F = $(notdir $^)
-# default
-SUFFIXES := 
-# environment
-CHROME_DESKTOP = code-url-handler.desktop
-# default
-.INCLUDE_DIRS = /usr/include /usr/local/include /usr/include
-# environment
-LC_IDENTIFICATION = ru_RU.UTF-8
+IM_CONFIG_PHASE = 1
 # default
 .RECIPEPREFIX := 
+# automatic
+<F = $(notdir $<)
+# default
+SUFFIXES := 
+# default
+.FEATURES := target-specific order-only second-expansion else-if shortest-stem undefine oneshell nocomment grouped-target extra-prereqs archives jobserver output-sync check-symlink load
 # environment
-LC_ADDRESS = ru_RU.UTF-8
+XDG_MENU_PREFIX = gnome-
 # environment
-LANG = C
+GDMSESSION = ubuntu-xorg
 # environment
-VSCODE_PID = 70313
+LC_IDENTIFICATION = ru_RU.UTF-8
 # variable set hash-table stats:
-# Load=113/1024=11%, Rehash=0, Collisions=11/138=8%
+# Load=113/1024=11%, Rehash=0, Collisions=4/143=3%
 
 # Pattern-specific Variable Values
 
@@ -247,9 +245,9 @@ VSCODE_PID = 70313
 
 # Directories
 
-# . (device 66307, inode 7987659): 14 files, no impossibilities.
+# . (device 66311, inode 12222485): 17 files, no impossibilities.
 
-# 14 files, no impossibilities in 1 directories.
+# 17 files, no impossibilities in 1 directories.
 
 # Implicit Rules
 
@@ -257,19 +255,31 @@ VSCODE_PID = 70313
 
 # Files
 
-udeps:
+coverage:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
-#  recipe to execute (from 'Makefile', line 25):
-	cargo +nightly udeps --all-targets
+#  recipe to execute (from 'Makefile', line 10):
+	cargo tarpaulin --ignore-test
+
+debug_restart: debug_down debug_up
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+run_service:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+#  recipe to execute (from 'Makefile', line 58):
+	cargo run -p acs-service
 
 # Not a target:
-all:
-#  Command line target.
+Makefile:
 #  Implicit rule search has been done.
-#  File does not exist.
-#  File has not been updated.
+#  Last modified 2022-09-19 00:52:22.506517175
+#  File has been updated.
+#  Successfully updated.
 
 up:
 #  Implicit rule search has not been done.
@@ -279,10 +289,43 @@ up:
 	docker login
 	docker compose -p acs-service-rs -f ./deployment/compose/docker-compose.yml up -d
 
-debug_restart: debug_down debug_up
+udeps:
+ 
+make: *** No rule to make target 'all'.  Stop.
+
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
+#  recipe to execute (from 'Makefile', line 25):
+	cargo +nightly udeps --all-targets
+
+fmt_check:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+#  recipe to execute (from 'Makefile', line 13):
+	cargo fmt -- --check
+
+security:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+#  recipe to execute (from 'Makefile', line 19):
+	cargo audit
+
+debug_down:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+#  recipe to execute (from 'Makefile', line 34):
+	docker compose -p acs-service-rs -f ./deployment/compose/docker-compose-debug.yml down --remove-orphans
+
+fmt:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+#  recipe to execute (from 'Makefile', line 16):
+	cargo fmt --all
 
 push: build
 #  Implicit rule search has not been done.
@@ -293,21 +336,6 @@ push: build
 	docker image push "akruglov/acs-service:${VERSION}"
 	docker image push "akruglov/acs-service:latest"
 
-# Not a target:
-Makefile:
-#  Implicit rule search has been done.
- 
-#  Last modified 2022-09-08 16:39:36.862275089
-#  File has been updated.
-#  Successfully updated.
-
-test:
-#  Implicit rule search has not been done.
-#  Modification time never checked.
-#  File has not been updated.
-#  recipe to execute (from 'Makefile', line 28):
-	TEST_LOG=true cargo test | bunyan
-
 clippy:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
@@ -315,12 +343,25 @@ clippy:
 #  recipe to execute (from 'Makefile', line 7):
 	cargo clippy --all --all-features --tests -- -D warnings
 
-fmt_check:
+# Not a target:
+.DEFAULT:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
-#  recipe to execute (from 'Makefile', line 13):
-	cargo fmt -- --check
+
+watch_service:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+#  recipe to execute (from 'Makefile', line 4):
+	cargo watch -x 'check --color=always' -x 'test -- --color=always' -x 'run -p acs-service'
+
+# Not a target:
+all:
+#  Command line target.
+#  Implicit rule search has been done.
+#  File does not exist.
+#  File has not been updated.
 
 build:
 #  Implicit rule search has not been done.
@@ -331,65 +372,24 @@ build:
 	docker tag "acs-service:${VERSION}" "akruglov/acs-service:${VERSION}"
 	docker tag "acs-service:${VERSION}" "akruglov/acs-service:latest"
 
-debug_up:
-#  Implicit rule search has not been done.
-#  Modification time never checked.
-#  File has not been updated.
-#  recipe to execute (from 'Makefile', line 31):
-	docker compose -p acs-service-rs -f ./deployment/compose/docker-compose-debug.yml up -d
-
-expand:
-#  Implicit rule search has not been done.
-#  Modification time never checked.
-#  File has not been updated.
-#  recipe to execute (from 'Makefile', line 22):
-	cargo expand
-
-watch:
-#  Implicit rule search has not been done.
-#  Modification time never checked.
-#  File has not been updated.
-#  recipe to execute (from 'Makefile', line 4):
-	cargo watch -x 'check --color=always' -x 'test -- --color=always' -x run
-
-# Not a target:
-.DEFAULT:
-#  Implicit rule search has not been done.
-#  Modification time never checked.
-#  File has not been updated.
-
 restart: down up
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
 
-debug_down:
+test:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
-#  recipe to execute (from 'Makefile', line 34):
-	docker compose -p acs-service-rs -f ./deployment/compose/docker-compose-debug.yml down --remove-orphans
+#  recipe to execute (from 'Makefile', line 28):
+	TEST_LOG=true cargo test | bunyan
 
-coverage:
+debug_up:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
-#  recipe to execute (from 'Makefile', line 10):
-	cargo tarpaulin --ignore-test
-
-security:
-#  Implicit rule search has not been done.
-#  Modification time never checked.
-#  File has not been updated.
-#  recipe to execute (from 'Makefile', line 19):
-	cargo audit
-
-fmt:
-#  Implicit rule search has not been done.
-#  Modification time never checked.
-#  File has not been updated.
-#  recipe to execute (from 'Makefile', line 16):
-	cargo fmt --all
+#  recipe to execute (from 'Makefile', line 31):
+	docker-compose -p acs-service-rs -f ./deployment/compose/docker-compose-debug.yml up -d
 
 down:
 #  Implicit rule search has not been done.
@@ -398,20 +398,27 @@ down:
 #  recipe to execute (from 'Makefile', line 53):
 	docker compose -p acs-service-rs -f ./deployment/compose/docker-compose.yml down
 
+expand:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+#  recipe to execute (from 'Makefile', line 22):
+	cargo expand
+
 # files hash-table stats:
-# Load=21/1024=2%, Rehash=0, Collisions=0/36=0%
+# Load=22/1024=2%, Rehash=0, Collisions=1/37=3%
 # VPATH Search Paths
 
 # No 'vpath' search paths.
 
 # No general ('VPATH' variable) search path.
 
-# strcache buffers: 1 (0) / strings = 36 / storage = 295 B / avg = 8 B
-# current buf: size = 8162 B / used = 295 B / count = 36 / avg = 8 B
+# strcache buffers: 1 (0) / strings = 40 / storage = 341 B / avg = 8 B
+# current buf: size = 8162 B / used = 341 B / count = 40 / avg = 8 B
 
-# strcache performance: lookups = 62 / hit rate = 41%
+# strcache performance: lookups = 67 / hit rate = 40%
 # hash-table stats:
-# Load=36/8192=0%, Rehash=0, Collisions=1/62=2%
-# Finished Make data base on Thu Sep  8 17:27:10 2022
+# Load=40/8192=0%, Rehash=0, Collisions=0/67=0%
+# Finished Make data base on Mon Sep 19 02:58:28 2022
 
  

@@ -20,7 +20,7 @@ RUN cargo chef cook --release --recipe-path recipe.json
 # Up to this point, if our dependency tree stays the same, all layers should be cached
 COPY . .
 
-RUN cargo build --release --bin acs-service
+RUN cargo build --release --package service --bin service
 
 # Runtime stage
 
@@ -38,6 +38,6 @@ RUN apt-get update \
     && apt-get clean -y \
     && rm -rf /var/lib/apt/lists/*
 
-COPY --from=builder /app/target/release/acs-service acs-service
+COPY --from=builder /app/target/release/service acs-service
 
 ENTRYPOINT ["./acs-service"]
