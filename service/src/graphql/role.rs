@@ -63,10 +63,48 @@ pub(crate) struct OpenersRights {
 }
 
 #[derive(SimpleObject, Clone)]
+pub(crate) struct BarrierManufacturersRights {
+    /// Can view the list of barrier manufacturers
+    list: bool,
+
+    /// Can view barrier manufcaturer's details
+    view: bool,
+
+    /// Can create barrier manufacturer
+    create: bool,
+
+    /// Can edit barrier manufacturer
+    edit: bool,
+
+    /// Can delete barrier manufcaturer
+    delete: bool,
+}
+
+#[derive(SimpleObject, Clone)]
+pub(crate) struct BarrierModelsRights {
+    /// Can view the list of barrier models
+    list: bool,
+
+    /// Can view barrier model's details
+    view: bool,
+
+    /// Can create barrier model
+    create: bool,
+
+    /// Can edit barrier model
+    edit: bool,
+
+    /// Can delete barrier model
+    delete: bool,
+}
+
+#[derive(SimpleObject, Clone)]
 pub(crate) struct AccessRights {
     users: UsersRights,
     roles: RolesRights,
     openers: OpenersRights,
+    barrier_manufacturers: BarrierManufacturersRights,
+    barrier_models: BarrierModelsRights,
 }
 
 #[derive(SimpleObject, Clone)]
@@ -159,6 +197,20 @@ impl From<&RoleEntity> for Role {
                     create: role.access_rights.openers.create,
                     edit: role.access_rights.openers.edit,
                     delete: role.access_rights.openers.delete,
+                },
+                barrier_manufacturers: BarrierManufacturersRights {
+                  list: role.access_rights.barrier_manufacturers.list,
+                  view: role.access_rights.barrier_manufacturers.view,
+                  create: role.access_rights.barrier_manufacturers.create,
+                  edit: role.access_rights.barrier_manufacturers.edit,
+                  delete: role.access_rights.barrier_manufacturers.delete,
+                },
+                barrier_models: BarrierModelsRights {
+                  list: role.access_rights.barrier_models.list,
+                  view: role.access_rights.barrier_models.view,
+                  create: role.access_rights.barrier_models.create,
+                  edit: role.access_rights.barrier_models.edit,
+                  delete: role.access_rights.barrier_models.delete,
                 },
             },
         }

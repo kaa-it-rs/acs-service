@@ -20,6 +20,10 @@ pub(crate) struct AccessRights {
     pub users: BaseRights,
     pub roles: BaseRights,
     pub openers: BaseRights,
+    #[serde(rename = "barrierManufacturers")]
+    pub barrier_manufacturers: BaseRights,
+    #[serde(rename = "barrierModels")]
+    pub barrier_models: BaseRights,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
