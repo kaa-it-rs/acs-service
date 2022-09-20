@@ -31,7 +31,7 @@ debug_up:
 	docker-compose -p acs-service-rs -f ./deployment/compose/docker-compose-debug.yml up -d
 
 debug_down:
-	docker compose -p acs-service-rs -f ./deployment/compose/docker-compose-debug.yml down --remove-orphans
+	docker-compose -p acs-service-rs -f ./deployment/compose/docker-compose-debug.yml down --remove-orphans
 
 debug_restart: debug_down debug_up
 

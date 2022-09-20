@@ -2,6 +2,7 @@ use async_graphql::*;
 
 mod auth;
 mod barrier_model;
+mod barrier_manufacturer;
 mod error;
 mod opener;
 pub(crate) mod role;
@@ -21,6 +22,7 @@ pub struct Query(
     user::UserQuery,
     opener::OpenerQuery,
     barrier_model::BarrierModelQuery,
+    barrier_manufacturer::BarrierManufacturerQuery,
 );
 
 #[derive(MergedSubscription, Default)]

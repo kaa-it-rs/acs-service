@@ -1,0 +1,109 @@
+use async_graphql::*;
+use crate::graphql::error::{Error, *};
+use crate::graphql::auth::{check_token, CheckTokenResult};
+use crate::persistence::barrier_manufacturer::{get_barrier_manufacturers, BarrierManufacturerEntity};
+use mongodb::Database;
+use std::convert::TryFrom;
+use std::convert::TryInto;
+
+#[derive(SimpleObject)]
+//#[graphql(complex)]
+pub struct BarrierManufacturer {
+  id: ID,
+  name: String,
+  created_at: i64,
+  updated_at: Option<i64>,
+
+  #[graphql(skip)]
+  model_ids: Option<Vec<String>>,
+}
+
+#[derive(Union)]
+enum BarrierManufacturerResult {
+    BarrierManufacturer(BarrierManufacturer),
+    InternalServerError(InternalServerError),
+    UnauthorizedError(UnauthorizedError),
+    PermissionDeniedError(PermissionDeniedError),
+    TokenIsExpiredError(TokenIsExpiredError),
+}
+
+impl From<Error> for BarrierManufacturerResult {
+    fn from(e: Error) -> Self {
+        match e {
+            Error::InternalServerError(e) => BarrierManufacturerResult::InternalServerError(e),
+            Error::UnauthorizedError(e) => BarrierManufacturerResult::UnauthorizedError(e),
+            Error::PermissionDeniedError(e) => BarrierManufacturerResult::PermissionDeniedError(e),
+            Error::TokenIsExpiredError(e) => BarrierManufacturerResult::TokenIsExpiredError(e),
+            _ => panic!("Can not cast from Error to BarrierManufacturerResult"),
+        }
+    }
+}
+
+#[derive(SimpleObject)]
+struct BarrierManufacturers {
+    items: Vec<BarrierManufacturer>,
+}
+
+#[derive(Union)]
+enum BarrierManufacturersResult {
+    BarrierManufacturers(BarrierManufacturers),
+    InternalServerError(InternalServerError),
+    UnauthorizedError(UnauthorizedError),
+    PermissionDeniedError(PermissionDeniedError),
+    TokenIsExpiredError(TokenIsExpiredError),
+}
+
+impl From<Error> for BarrierManufacturersResult {
+    fn from(e: Error) -> Self {
+        match e {
+            Error::InternalServerError(e) => BarrierManufacturersResult::InternalServerError(e),
+            Error::UnauthorizedError(e) => BarrierManufacturersResult::UnauthorizedError(e),
+            Error::PermissionDeniedError(e) => BarrierManufacturersResult::PermissionDeniedError(e),
+            Error::TokenIsExpiredError(e) => BarrierManufacturersResult::TokenIsExpiredError(e),
+            _ => panic!("Can not cast from Error to BarrierManufacturersResult"),
+        }
+    }
+}
+
+#[derive(Default)]
+pub(super) struct BarrierManufacturerQuery;
+
+#[Object]
+impl BarrierManufacturerQuery {
+  async fn barrier_manufacturers(
+    &self,
+    ctx: &Context<'_>,
+  ) -> BarrierManufacturersResult {
+    let db = ctx.data::<Database>().expect("Can't get db connection");
+
+    if let CheckTokenResult::Err(e) =
+      check_token(ctx, |role| role.access_rights.barrier_manufacturers.list).await
+    {
+      return e.into();
+    }
+    
+    let manufacturers = match get_barrier_manufacturers(db).await {
+      Err(e) => {
+        log::error!("Failed to get barrier manufacturers: {}", e.to_string());
+        return BarrierManufacturersResult::InternalServerError(e.into());
+      }
+      Ok(m) => m,
+    };
+
+    BarrierManufacturersResult::BarrierManufacturers(BarrierManufacturers {
+      items: manufacturers.iter().map(BarrierManufacturer::from).collect(),
+    })
+  }
+}
+
+impl From<&BarrierManufacturerEntity> for BarrierManufacturer {
+  fn from(manufacturer: &BarrierManufacturerEntity) -> Self {
+    Self {
+      id: ID::from(manufacturer.id.unwrap()),
+      name: manufacturer.name.clone(),
+      created_at: manufacturer.created_at.timestamp_millis(),
+      updated_at: manufacturer.updated_at.map(|t| t.timestamp_millis()),
+      model_ids: manufacturer.model_ids.as_ref().map(|v| v.iter().map(|id| id.to_string()).collect()),
+    }
+  }
+}
