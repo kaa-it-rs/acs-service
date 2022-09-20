@@ -1,3 +1,4 @@
+use crate::persistence::barrier_manufacturer::get_barrier_manufacturer_by_id;
 use async_graphql::*;
 use crate::graphql::error::{Error, *};
 use crate::graphql::auth::{check_token, CheckTokenResult};
@@ -70,6 +71,27 @@ pub(super) struct BarrierManufacturerQuery;
 
 #[Object]
 impl BarrierManufacturerQuery {
+  async fn barrier_manufacturer(&self, ctx: &Context<'_>, id: ID) -> Option<BarrierManufacturerResult> {
+    let db = ctx.data::<Database>().expect("Can't get db connection");
+
+    if let CheckTokenResult::Err(e) =
+        check_token(ctx, |role| role.access_rights.barrier_manufacturers.view).await
+    {
+        return Some(e.into());
+    }
+
+    let manufacturer = match get_barrier_manufacturer_by_id(db, &id).await {
+        Err(e) => return Some(BarrierManufacturerResult::InternalServerError(e.into())),
+        Ok(m) => m,
+    };
+
+    manufacturer.as_ref()?;
+
+    let manufacturer = manufacturer.unwrap();
+
+    Some(BarrierManufacturerResult::BarrierManufacturer(BarrierManufacturer::from(&manufacturer)))
+  }
+
   async fn barrier_manufacturers(
     &self,
     ctx: &Context<'_>,

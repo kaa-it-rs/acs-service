@@ -36,3 +36,18 @@ pub(crate) async fn get_barrier_manufacturers(db: &Database) -> Result<Vec<Barri
 
   Ok(manufacturers)
 }
+
+pub(crate) async fn get_barrier_manufacturer_by_id(db: &Database, id: &str) -> Result<Option<BarrierManufacturerEntity>> {
+  let manufacturers = db.collection::<BarrierManufacturerEntity>("barrierManufacturers");
+
+  let manufacturer = manufacturers
+    .find_one(
+      doc! {
+        "_id": ObjectId::from_str(id)?
+      },
+      None,
+    )
+    .await?;
+
+    Ok(manufacturer)
+}
