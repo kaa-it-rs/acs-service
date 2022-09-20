@@ -1,8 +1,11 @@
 use crate::graphql::auth::{check_token, CheckTokenResult};
+use crate::graphql::barrier_manufacturer::BarrierManufacturerLoader;
+use crate::graphql::barrier_manufacturer::NestedBarrierManufacturerResult;
 use crate::graphql::error::{Error, *};
 use crate::persistence::barrier_model::get_barrier_model_by_id;
 use crate::persistence::barrier_model::get_barrier_models;
 use crate::persistence::barrier_model::BarrierModelEntity;
+use async_graphql::dataloader::DataLoader;
 use async_graphql::*;
 use mongodb::Database;
 use std::convert::TryFrom;
@@ -35,7 +38,7 @@ impl TryFrom<&str> for BarrierAlgorithm {
 }
 
 #[derive(SimpleObject)]
-//#[graphql(complex)]
+#[graphql(complex)]
 pub struct BarrierModel {
     id: ID,
     name: String,
@@ -45,6 +48,41 @@ pub struct BarrierModel {
 
     #[graphql(skip)]
     manufacturer_id: Option<String>,
+}
+
+#[ComplexObject]
+impl BarrierModel {
+    async fn barrier_manufacturer(&self, ctx: &Context<'_>) -> NestedBarrierManufacturerResult {
+        if self.manufacturer_id.is_none() {
+            return NestedBarrierManufacturerResult::NotFoundError(NotFoundError::new(
+                "Not found",
+                "BarrierManufacturer",
+            ));
+        }
+
+        let data_loader = ctx
+            .data::<DataLoader<BarrierManufacturerLoader>>()
+            .expect("Can't get barrier manufacturer data loader");
+
+        let manufacturer = match data_loader
+            .load_one(self.manufacturer_id.as_ref().unwrap().clone())
+            .await
+        {
+            Err(e) => {
+                return NestedBarrierManufacturerResult::InternalServerError(e.message.into())
+            }
+            Ok(r) => r,
+        };
+
+        if manufacturer.is_none() {
+            return NestedBarrierManufacturerResult::NotFoundError(NotFoundError::new(
+                "Not found",
+                "BarrierManufacturer",
+            ));
+        }
+
+        NestedBarrierManufacturerResult::BarrierManufacturer(manufacturer.unwrap())
+    }
 }
 
 fn manufacturer_id_default() -> Option<ID> {

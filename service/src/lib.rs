@@ -1,3 +1,4 @@
+use crate::graphql::barrier_manufacturer::BarrierManufacturerLoader;
 use std::env;
 use std::sync::{
     atomic::{AtomicUsize, Ordering},
@@ -93,6 +94,11 @@ pub fn create_schema_with_context(
         DataLoader::new(RoleLoader { db: db.clone() }, async_std::task::spawn).max_batch_size(100);
     let user_dataloader =
         DataLoader::new(UserLoader { db: db.clone() }, async_std::task::spawn).max_batch_size(100);
+    let barrier_manufacturer_dataloader = DataLoader::new(
+        BarrierManufacturerLoader { db: db.clone() },
+        async_std::task::spawn,
+    )
+    .max_batch_size(100);
 
     let tracer = global::tracer("acs_service");
 
@@ -107,6 +113,7 @@ pub fn create_schema_with_context(
     .data(db)
     .data(role_dataloader)
     .data(user_dataloader)
+    .data(barrier_manufacturer_dataloader)
     .extension(otel)
     .finish()
 }
