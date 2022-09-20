@@ -1,6 +1,7 @@
 use async_graphql::*;
 
 mod auth;
+mod barrier_model;
 mod error;
 mod opener;
 pub(crate) mod role;
@@ -15,7 +16,7 @@ pub(crate) use opener::OpenerConnectionChanged;
 pub struct Mutation(auth::AuthMutation, opener::OpenerMutation);
 
 #[derive(MergedObject, Default)]
-pub struct Query(role::RoleQuery, user::UserQuery, opener::OpenerQuery);
+pub struct Query(role::RoleQuery, user::UserQuery, opener::OpenerQuery, barrier_model::BarrierModelQuery);
 
 #[derive(MergedSubscription, Default)]
 pub struct Subscription(opener::OpenerSubscription);
