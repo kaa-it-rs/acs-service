@@ -134,6 +134,13 @@ pub(super) enum NestedBarrierModelsResult {
     NotFoundError(NotFoundError),
 }
 
+#[derive(Union)]
+pub(super) enum NestedBarrierModelResult {
+    BarrierModel(BarrierModel),
+    InternalServerError(InternalServerError),
+    NotFoundError(NotFoundError),
+}
+
 #[derive(Default)]
 pub(super) struct BarrierModelQuery;
 

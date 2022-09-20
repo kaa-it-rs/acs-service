@@ -13,6 +13,8 @@ use async_graphql::*;
 use futures::{Stream, StreamExt};
 use mongodb::Database;
 
+use super::barrier_model::{BarrierModelLoader, NestedBarrierModelResult};
+
 #[derive(SimpleObject)]
 #[graphql(complex)]
 pub(crate) struct Opener {
@@ -28,6 +30,9 @@ pub(crate) struct Opener {
     connected: bool,
     created_at: i64,
     updated_at: Option<i64>,
+
+    #[graphql(skip)]
+    barrier_model_id: Option<String>,
 
     #[graphql(skip)]
     user_id: Option<String>,
@@ -57,6 +62,34 @@ impl Opener {
         }
 
         Some(NestedUserResult::User(user.unwrap()))
+    }
+
+    async fn barrier_model(&self, ctx: &Context<'_>) -> Option<NestedBarrierModelResult> {
+        self.barrier_model_id.as_ref()?;
+
+        let barrier_model_id = self.barrier_model_id.as_ref().unwrap();
+
+        let data_loader = ctx
+            .data::<DataLoader<BarrierModelLoader>>()
+            .expect("Can't get barrier model data loader");
+
+        let model = match data_loader.load_one(barrier_model_id.clone()).await {
+            Err(e) => {
+                return Some(NestedBarrierModelResult::InternalServerError(
+                    e.message.into(),
+                ))
+            }
+            Ok(m) => m,
+        };
+
+        if model.is_none() {
+            return Some(NestedBarrierModelResult::NotFoundError(NotFoundError::new(
+                "Not found",
+                "BarrierModel",
+            )));
+        }
+
+        Some(NestedBarrierModelResult::BarrierModel(model.unwrap()))
     }
 }
 
@@ -394,6 +427,7 @@ impl From<&OpenerEntity> for Opener {
             connected: opener.connected,
             created_at: opener.created_at.timestamp_millis(),
             updated_at: opener.updated_at.map(|t| t.timestamp_millis()),
+            barrier_model_id: opener.barrier_model_id.map(|id| id.to_string()),
             user_id: opener.user_id.map(|id| id.to_string()),
         }
     }

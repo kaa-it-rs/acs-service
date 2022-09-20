@@ -50,6 +50,9 @@ pub(crate) struct OpenerEntity {
     #[serde(rename = "updatedAt")]
     pub updated_at: Option<bson::DateTime>,
 
+    #[serde(rename = "barrierModelId")]
+    pub barrier_model_id: Option<ObjectId>,
+
     #[serde(rename = "userId")]
     pub user_id: Option<ObjectId>,
 }
