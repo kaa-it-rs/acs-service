@@ -1,5 +1,6 @@
 use crate::graphql::auth::{check_token, CheckTokenResult};
 use crate::graphql::error::{Error, *};
+use crate::persistence::barrier_model::get_barrier_model_by_id;
 use crate::persistence::barrier_model::get_barrier_models;
 use crate::persistence::barrier_model::BarrierModelEntity;
 use async_graphql::*;
@@ -102,6 +103,35 @@ pub(super) struct BarrierModelQuery;
 
 #[Object]
 impl BarrierModelQuery {
+    async fn barrier_model(&self, ctx: &Context<'_>, id: ID) -> Option<BarrierModelResult> {
+        let db = ctx.data::<Database>().expect("Can't get db connection");
+
+        if let CheckTokenResult::Err(e) =
+            check_token(ctx, |role| role.access_rights.barrier_models.view).await
+        {
+            return Some(e.into());
+        }
+
+        let model = match get_barrier_model_by_id(db, &id).await {
+            Err(e) => return Some(BarrierModelResult::InternalServerError(e.into())),
+            Ok(m) => m,
+        };
+
+        model.as_ref()?;
+
+        let model = model.unwrap();
+
+        let model = match BarrierModel::try_from(&model) {
+            Err(e) => {
+                log::error!("Failed to convert barrier model {}", e);
+                return Some(BarrierModelResult::InternalServerError(e.into()));
+            }
+            Ok(m) => m,
+        };
+
+        Some(BarrierModelResult::BarrierModel(model))
+    }
+
     async fn barrier_models(
         &self,
         ctx: &Context<'_>,

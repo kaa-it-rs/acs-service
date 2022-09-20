@@ -16,7 +16,12 @@ pub(crate) use opener::OpenerConnectionChanged;
 pub struct Mutation(auth::AuthMutation, opener::OpenerMutation);
 
 #[derive(MergedObject, Default)]
-pub struct Query(role::RoleQuery, user::UserQuery, opener::OpenerQuery, barrier_model::BarrierModelQuery);
+pub struct Query(
+    role::RoleQuery,
+    user::UserQuery,
+    opener::OpenerQuery,
+    barrier_model::BarrierModelQuery,
+);
 
 #[derive(MergedSubscription, Default)]
 pub struct Subscription(opener::OpenerSubscription);

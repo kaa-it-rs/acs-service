@@ -1,6 +1,7 @@
 use anyhow::Result;
 use bson::oid::ObjectId;
 use futures::StreamExt;
+use mongodb::bson::doc;
 use mongodb::Database;
 use serde::{Deserialize, Serialize};
 use std::str::FromStr;
@@ -45,4 +46,22 @@ pub(crate) async fn get_barrier_models(
     }
 
     Ok(models)
+}
+
+pub(crate) async fn get_barrier_model_by_id(
+    db: &Database,
+    id: &str,
+) -> Result<Option<BarrierModelEntity>> {
+    let models = db.collection::<BarrierModelEntity>("barrierModels");
+
+    let model = models
+        .find_one(
+            doc! {
+              "_id": ObjectId::from_str(id)?
+            },
+            None,
+        )
+        .await?;
+
+    Ok(model)
 }
