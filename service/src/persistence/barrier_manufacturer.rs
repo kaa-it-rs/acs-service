@@ -57,7 +57,7 @@ pub(crate) async fn get_barrier_manufacturer_by_id(
     Ok(manufacturer)
 }
 
-pub(crate) async fn get_manufacturers_by_id(
+pub(crate) async fn get_barrier_manufacturers_by_id(
     db: &Database,
     ids: &[String],
 ) -> Result<Vec<BarrierManufacturerEntity>> {

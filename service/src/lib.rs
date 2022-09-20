@@ -17,6 +17,7 @@ use async_graphql::extensions::OpenTelemetry;
 use async_graphql::http::{playground_source, GraphQLPlaygroundConfig};
 use async_graphql::Schema;
 use async_graphql_actix_web::{GraphQLRequest, GraphQLResponse, GraphQLSubscription};
+use graphql::barrier_model::BarrierModelLoader;
 use graphql::role::RoleLoader;
 use mongodb::{options::ClientOptions, options::ResolverConfig, Database};
 use opentelemetry::global;
@@ -99,6 +100,11 @@ pub fn create_schema_with_context(
         async_std::task::spawn,
     )
     .max_batch_size(100);
+    let barrier_model_dataloader = DataLoader::new(
+        BarrierModelLoader { db: db.clone() },
+        async_std::task::spawn,
+    )
+    .max_batch_size(100);
 
     let tracer = global::tracer("acs_service");
 
@@ -114,6 +120,7 @@ pub fn create_schema_with_context(
     .data(role_dataloader)
     .data(user_dataloader)
     .data(barrier_manufacturer_dataloader)
+    .data(barrier_model_dataloader)
     .extension(otel)
     .finish()
 }

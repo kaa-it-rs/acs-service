@@ -18,7 +18,7 @@ pub(crate) struct BarrierModelEntity {
     pub updated_at: Option<bson::DateTime>,
 
     #[serde(rename = "manufacturerId")]
-    pub manufacturer_id: Option<ObjectId>,
+    pub manufacturer_id: ObjectId,
 }
 
 pub(crate) async fn get_barrier_models(
@@ -64,4 +64,31 @@ pub(crate) async fn get_barrier_model_by_id(
         .await?;
 
     Ok(model)
+}
+
+pub(crate) async fn get_barrier_models_by_id(
+    db: &Database,
+    ids: &[String],
+) -> Result<Vec<BarrierModelEntity>> {
+    let models = db.collection::<BarrierModelEntity>("barrierModels");
+
+    let ids = ids
+        .iter()
+        .map(|k| ObjectId::from_str(k).map_err(anyhow::Error::from))
+        .collect::<Result<Vec<ObjectId>>>()?;
+
+    let filter = doc! {
+        "_id": {
+            "$in": ids
+        }
+    };
+
+    let mut cursor = models.find(filter, None).await?;
+
+    let mut result: Vec<BarrierModelEntity> = Vec::new();
+    while let Some(model) = cursor.next().await {
+        result.push(model?);
+    }
+
+    Ok(result)
 }

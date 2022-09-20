@@ -2,12 +2,13 @@ use crate::graphql::auth::{check_token, CheckTokenResult};
 use crate::graphql::barrier_manufacturer::BarrierManufacturerLoader;
 use crate::graphql::barrier_manufacturer::NestedBarrierManufacturerResult;
 use crate::graphql::error::{Error, *};
-use crate::persistence::barrier_model::get_barrier_model_by_id;
 use crate::persistence::barrier_model::get_barrier_models;
 use crate::persistence::barrier_model::BarrierModelEntity;
-use async_graphql::dataloader::DataLoader;
+use crate::persistence::barrier_model::{get_barrier_model_by_id, get_barrier_models_by_id};
+use async_graphql::dataloader::{DataLoader, Loader};
 use async_graphql::*;
 use mongodb::Database;
+use std::collections::HashMap;
 use std::convert::TryFrom;
 use std::convert::TryInto;
 
@@ -37,7 +38,7 @@ impl TryFrom<&str> for BarrierAlgorithm {
     }
 }
 
-#[derive(SimpleObject)]
+#[derive(SimpleObject, Clone)]
 #[graphql(complex)]
 pub struct BarrierModel {
     id: ID,
@@ -47,27 +48,17 @@ pub struct BarrierModel {
     updated_at: Option<i64>,
 
     #[graphql(skip)]
-    manufacturer_id: Option<String>,
+    manufacturer_id: String,
 }
 
 #[ComplexObject]
 impl BarrierModel {
     async fn barrier_manufacturer(&self, ctx: &Context<'_>) -> NestedBarrierManufacturerResult {
-        if self.manufacturer_id.is_none() {
-            return NestedBarrierManufacturerResult::NotFoundError(NotFoundError::new(
-                "Not found",
-                "BarrierManufacturer",
-            ));
-        }
-
         let data_loader = ctx
             .data::<DataLoader<BarrierManufacturerLoader>>()
             .expect("Can't get barrier manufacturer data loader");
 
-        let manufacturer = match data_loader
-            .load_one(self.manufacturer_id.as_ref().unwrap().clone())
-            .await
-        {
+        let manufacturer = match data_loader.load_one(self.manufacturer_id.clone()).await {
             Err(e) => {
                 return NestedBarrierManufacturerResult::InternalServerError(e.message.into())
             }
@@ -111,8 +102,8 @@ impl From<Error> for BarrierModelResult {
 }
 
 #[derive(SimpleObject)]
-struct BarrierModels {
-    items: Vec<BarrierModel>,
+pub(super) struct BarrierModels {
+    pub items: Vec<BarrierModel>,
 }
 
 #[derive(Union)]
@@ -134,6 +125,13 @@ impl From<Error> for BarrierModelsResult {
             _ => panic!("Can not cast from Error to BarrierModelsResult"),
         }
     }
+}
+
+#[derive(Union)]
+pub(super) enum NestedBarrierModelsResult {
+    BarrierModels(BarrierModels),
+    InternalServerError(InternalServerError),
+    NotFoundError(NotFoundError),
 }
 
 #[derive(Default)]
@@ -199,7 +197,7 @@ impl BarrierModelQuery {
 
         let models = match models.iter().map(BarrierModel::try_from).collect() {
             Err(e) => {
-                log::error!("Failed to convert barrier models {}", e);
+                log::error!("Failed to convert barrier models: {}", e);
                 return BarrierModelsResult::InternalServerError(e.into());
             }
             Ok(m) => m,
@@ -219,7 +217,34 @@ impl TryFrom<&BarrierModelEntity> for BarrierModel {
             algorithm: model.algorithm.as_str().try_into()?,
             created_at: model.created_at.timestamp_millis(),
             updated_at: model.updated_at.map(|t| t.timestamp_millis()),
-            manufacturer_id: model.manufacturer_id.map(|id| id.to_string()),
+            manufacturer_id: model.manufacturer_id.to_string(),
         })
+    }
+}
+
+pub(crate) struct BarrierModelLoader {
+    pub db: mongodb::Database,
+}
+
+#[async_trait::async_trait]
+impl Loader<String> for BarrierModelLoader {
+    type Value = BarrierModel;
+    type Error = async_graphql::Error;
+
+    async fn load(&self, keys: &[String]) -> Result<HashMap<String, Self::Value>, Self::Error> {
+        let models = get_barrier_models_by_id(&self.db, keys).await?;
+
+        let models: Vec<BarrierModel> = match models.iter().map(BarrierModel::try_from).collect() {
+            Err(e) => {
+                log::error!("Failed to convert barrier models: {}", e);
+                return Err(e.into());
+            }
+            Ok(m) => m,
+        };
+
+        Ok(models
+            .into_iter()
+            .map(|model| (model.id.to_string(), model))
+            .collect::<HashMap<_, _>>())
     }
 }

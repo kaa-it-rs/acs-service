@@ -2,7 +2,7 @@ use async_graphql::*;
 
 mod auth;
 pub(crate) mod barrier_manufacturer;
-mod barrier_model;
+pub(crate) mod barrier_model;
 mod error;
 mod opener;
 pub(crate) mod role;

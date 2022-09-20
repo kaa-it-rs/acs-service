@@ -1,17 +1,19 @@
 use crate::graphql::auth::{check_token, CheckTokenResult};
 use crate::graphql::error::{Error, *};
 use crate::persistence::barrier_manufacturer::get_barrier_manufacturer_by_id;
-use crate::persistence::barrier_manufacturer::get_manufacturers_by_id;
+use crate::persistence::barrier_manufacturer::get_barrier_manufacturers_by_id;
 use crate::persistence::barrier_manufacturer::{
     get_barrier_manufacturers, BarrierManufacturerEntity,
 };
-use async_graphql::dataloader::Loader;
+use async_graphql::dataloader::{DataLoader, Loader};
 use async_graphql::*;
 use mongodb::Database;
 use std::collections::HashMap;
 
+use super::barrier_model::{BarrierModelLoader, BarrierModels, NestedBarrierModelsResult};
+
 #[derive(SimpleObject, Clone)]
-//#[graphql(complex)]
+#[graphql(complex)]
 pub struct BarrierManufacturer {
     id: ID,
     name: String,
@@ -20,6 +22,34 @@ pub struct BarrierManufacturer {
 
     #[graphql(skip)]
     model_ids: Option<Vec<String>>,
+}
+
+#[ComplexObject]
+impl BarrierManufacturer {
+    async fn barrier_models(&self, ctx: &Context<'_>) -> NestedBarrierModelsResult {
+        if self.model_ids.is_none() {
+            return NestedBarrierModelsResult::NotFoundError(NotFoundError::new(
+                "Not found",
+                "BarrierModels",
+            ));
+        }
+
+        let data_loader = ctx
+            .data::<DataLoader<BarrierModelLoader>>()
+            .expect("Can't get barrier model data loader");
+
+        let models = match data_loader
+            .load_many(self.model_ids.as_ref().unwrap().clone())
+            .await
+        {
+            Err(e) => return NestedBarrierModelsResult::InternalServerError(e.message.into()),
+            Ok(r) => r,
+        };
+
+        let models = models.into_values().collect();
+
+        NestedBarrierModelsResult::BarrierModels(BarrierModels { items: models })
+    }
 }
 
 #[derive(Union)]
@@ -159,7 +189,7 @@ impl Loader<String> for BarrierManufacturerLoader {
     type Error = async_graphql::Error;
 
     async fn load(&self, keys: &[String]) -> Result<HashMap<String, Self::Value>, Self::Error> {
-        let manufacturers = get_manufacturers_by_id(&self.db, keys).await?;
+        let manufacturers = get_barrier_manufacturers_by_id(&self.db, keys).await?;
 
         Ok(manufacturers
             .iter()
