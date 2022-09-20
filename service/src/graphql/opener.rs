@@ -5,15 +5,73 @@ use crate::graphql::simple_broker::SimpleBroker;
 use crate::graphql::user::{NestedUserResult, UserLoader};
 use crate::persistence::opener::{
     create_opener, get_opener_by_id, get_opener_by_sn, get_openers, update_opener, NewOpenerEntity,
-    OpenerEntity, UpdateOpenerEntity,
+    OpenerEntity, OpenerErrorEntity, UpdateOpenerEntity,
 };
 use crate::persistence::role::get_role_by_id;
 use async_graphql::dataloader::DataLoader;
 use async_graphql::*;
 use futures::{Stream, StreamExt};
 use mongodb::Database;
+use std::convert::{TryFrom, TryInto};
 
 use super::barrier_model::{BarrierModelLoader, NestedBarrierModelResult};
+
+/// Describes statuses of commands for controller
+#[derive(Enum, Copy, Clone, Eq, PartialEq)]
+pub enum CommandStatus {
+    Ready,
+    Pending,
+    Success,
+    Failed,
+}
+
+impl TryFrom<&str> for CommandStatus {
+    type Error = &'static str;
+
+    fn try_from(value: &str) -> Result<Self, Self::Error> {
+        match value {
+            "READY" => Ok(CommandStatus::Ready),
+            "PENDING" => Ok(CommandStatus::Pending),
+            "SUCCESS" => Ok(CommandStatus::Success),
+            "FAILED" => Ok(CommandStatus::Failed),
+            _ => Err("Wrong command status"),
+        }
+    }
+}
+
+/// Describes types of commands for controller
+#[derive(Enum, Copy, Clone, Eq, PartialEq)]
+pub enum CommandType {
+    Info,
+    Set,
+    AddTags,
+    RemoveTags,
+    Update,
+}
+
+impl TryFrom<&str> for CommandType {
+    type Error = &'static str;
+
+    fn try_from(value: &str) -> Result<Self, Self::Error> {
+        match value {
+            "INFO" => Ok(CommandType::Info),
+            "SET" => Ok(CommandType::Set),
+            "ADD_TAGS" => Ok(CommandType::AddTags),
+            "REMOVE_TAGS" => Ok(CommandType::RemoveTags),
+            "UPDATE" => Ok(CommandType::Update),
+            _ => Err("Wrong command type"),
+        }
+    }
+}
+
+/// Describes error data returned by controller
+#[derive(SimpleObject)]
+pub(crate) struct OpenerError {
+    serial_number: String,
+    code: u32,
+    description: String,
+    details: Option<String>,
+}
 
 #[derive(SimpleObject)]
 #[graphql(complex)]
@@ -30,6 +88,12 @@ pub(crate) struct Opener {
     connected: bool,
     created_at: i64,
     updated_at: Option<i64>,
+    last_error: Option<OpenerError>,
+    last_command_type: Option<CommandType>,
+    command_status: CommandStatus,
+
+    #[graphql(skip)]
+    command_status_changed_at: Option<i64>,
 
     #[graphql(skip)]
     barrier_model_id: Option<String>,
@@ -252,7 +316,15 @@ impl OpenerMutation {
             Ok(opener) => opener,
         };
 
-        CreateOpenerResult::Opener(Box::new(Opener::from(&opener)))
+        let opener = match Opener::try_from(&opener) {
+            Err(e) => {
+                log::error!("Failed to convert opener {}", e);
+                return CreateOpenerResult::InternalServerError(e.into());
+            }
+            Ok(m) => m,
+        };
+
+        CreateOpenerResult::Opener(Box::new(opener))
     }
 
     async fn update_opener(
@@ -338,7 +410,15 @@ impl OpenerMutation {
             Ok(o) => o,
         };
 
-        UpdateOpenerResult::Opener(Box::new(Opener::from(&opener)))
+        let opener = match Opener::try_from(&opener) {
+            Err(e) => {
+                log::error!("Failed to convert opener {}", e);
+                return UpdateOpenerResult::InternalServerError(e.into());
+            }
+            Ok(o) => o,
+        };
+
+        UpdateOpenerResult::Opener(Box::new(opener))
     }
 }
 
@@ -368,14 +448,30 @@ impl OpenerQuery {
         // Admin can view any opener
 
         if token.1 == "admin" {
-            return Some(OpenerResult::Opener(Box::new(Opener::from(&opener))));
+            let opener = match Opener::try_from(&opener) {
+                Err(e) => {
+                    log::error!("Failed to convert opener {}", e);
+                    return Some(OpenerResult::InternalServerError(e.into()));
+                }
+                Ok(o) => o,
+            };
+
+            return Some(OpenerResult::Opener(Box::new(opener)));
         }
 
         // Others can view only theirs openers
 
         if let Some(user_id) = opener.user_id {
             if user_id.to_string() == token.0.user_id {
-                return Some(OpenerResult::Opener(Box::new(Opener::from(&opener))));
+                let opener = match Opener::try_from(&opener) {
+                    Err(e) => {
+                        log::error!("Failed to convert opener {}", e);
+                        return Some(OpenerResult::InternalServerError(e.into()));
+                    }
+                    Ok(o) => o,
+                };
+
+                return Some(OpenerResult::Opener(Box::new(opener)));
             }
         }
 
@@ -406,15 +502,23 @@ impl OpenerQuery {
             Ok(o) => o,
         };
 
-        OpenersResult::Openers(Openers {
-            items: openers.iter().map(Opener::from).collect(),
-        })
+        let openers = match openers.iter().map(Opener::try_from).collect() {
+            Err(e) => {
+                log::error!("Failed to convert openers: {}", e);
+                return OpenersResult::InternalServerError(e.into());
+            }
+            Ok(o) => o,
+        };
+
+        OpenersResult::Openers(Openers { items: openers })
     }
 }
 
-impl From<&OpenerEntity> for Opener {
-    fn from(opener: &OpenerEntity) -> Self {
-        Self {
+impl TryFrom<&OpenerEntity> for Opener {
+    type Error = &'static str;
+
+    fn try_from(opener: &OpenerEntity) -> Result<Self, Self::Error> {
+        Ok(Self {
             id: ID::from(opener.id.unwrap()),
             serial_number: opener.serial_number.clone(),
             version: opener.version.clone(),
@@ -429,6 +533,27 @@ impl From<&OpenerEntity> for Opener {
             updated_at: opener.updated_at.map(|t| t.timestamp_millis()),
             barrier_model_id: opener.barrier_model_id.map(|id| id.to_string()),
             user_id: opener.user_id.map(|id| id.to_string()),
+            command_status: opener.command_status.as_str().try_into()?,
+            command_status_changed_at: opener
+                .command_status_changed_at
+                .map(|t| t.timestamp_millis()),
+            last_command_type: opener
+                .last_command_type
+                .as_ref()
+                .map(|t| t.as_str().try_into())
+                .transpose()?,
+            last_error: opener.last_error.as_ref().map(|e| e.into()),
+        })
+    }
+}
+
+impl From<&OpenerErrorEntity> for OpenerError {
+    fn from(error: &OpenerErrorEntity) -> Self {
+        Self {
+            serial_number: error.serial_number.clone(),
+            code: error.code,
+            description: error.description.clone(),
+            details: error.details.clone(),
         }
     }
 }

@@ -31,6 +31,15 @@ pub(crate) struct UpdateOpenerEntity {
 }
 
 #[derive(Serialize, Deserialize, Debug)]
+pub(crate) struct OpenerErrorEntity {
+    #[serde(rename = "serialNumber")]
+    pub serial_number: String,
+    pub code: u32,
+    pub description: String,
+    pub details: Option<String>,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
 pub(crate) struct OpenerEntity {
     #[serde(rename = "_id", skip_serializing_if = "Option::is_none")]
     pub id: Option<ObjectId>,
@@ -55,6 +64,18 @@ pub(crate) struct OpenerEntity {
 
     #[serde(rename = "userId")]
     pub user_id: Option<ObjectId>,
+
+    #[serde(rename = "lastError")]
+    pub last_error: Option<OpenerErrorEntity>,
+
+    #[serde(rename = "userId")]
+    pub last_command_type: Option<String>,
+
+    #[serde(rename = "commandStatusChangedAt")]
+    pub command_status_changed_at: Option<bson::DateTime>,
+
+    #[serde(rename = "commandStatus")]
+    pub command_status: String,
 }
 
 pub(crate) async fn create_opener(
