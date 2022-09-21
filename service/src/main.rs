@@ -22,11 +22,11 @@ async fn main() -> Result<()> {
     log::info!("dfsdfsdfdsfxxорлорлmhgfhgfhgfhbgdhgfh");
     let db = init_db().await?;
 
-    let schema = create_schema_with_context(db.clone());
-
     let openers_count = Arc::new(AtomicUsize::new(0));
 
     let opener_server = OpenerServer::new(openers_count.clone(), db.clone()).start();
+
+    let schema = create_schema_with_context(db.clone(), opener_server.clone());
 
     HttpServer::new(move || {
         App::new()

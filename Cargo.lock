@@ -41,8 +41,10 @@ dependencies = [
  "rand",
  "serde",
  "serde_json",
+ "sha256",
  "slab",
  "thiserror",
+ "tokio",
 ]
 
 [[package]]
@@ -1667,7 +1669,7 @@ dependencies = [
  "serde",
  "serde_with",
  "sha-1 0.10.0",
- "sha2",
+ "sha2 0.10.2",
  "socket2",
  "stringprep",
  "strsim",
@@ -2331,6 +2333,19 @@ dependencies = [
 
 [[package]]
 name = "sha2"
+version = "0.9.9"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4d58a1e1bf39749807d89cf2d98ac2dfa0ff1cb3faa38fbb64dd88ac8013d800"
+dependencies = [
+ "block-buffer 0.9.0",
+ "cfg-if",
+ "cpufeatures",
+ "digest 0.9.0",
+ "opaque-debug",
+]
+
+[[package]]
+name = "sha2"
 version = "0.10.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "55deaec60f81eefe3cce0dc50bda92d6d8e88f2a27df7c5033b42afeb1ed2676"
@@ -2338,6 +2353,16 @@ dependencies = [
  "cfg-if",
  "cpufeatures",
  "digest 0.10.3",
+]
+
+[[package]]
+name = "sha256"
+version = "1.0.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4e84a7f596c081d359de5e06a83877138bc3c4483591e1af1916e1472e6e146e"
+dependencies = [
+ "hex",
+ "sha2 0.9.9",
 ]
 
 [[package]]

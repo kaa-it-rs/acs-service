@@ -90,6 +90,7 @@ pub async fn index_playground() -> actix_web::Result<HttpResponse> {
 
 pub fn create_schema_with_context(
     db: Database,
+    opener_server: Addr<server::OpenerServer>,
 ) -> Schema<graphql::Query, graphql::Mutation, graphql::Subscription> {
     let role_dataloader =
         DataLoader::new(RoleLoader { db: db.clone() }, async_std::task::spawn).max_batch_size(100);
@@ -117,6 +118,7 @@ pub fn create_schema_with_context(
     )
     .register_output_type::<graphql::Error>()
     .data(db)
+    .data(opener_server)
     .data(role_dataloader)
     .data(user_dataloader)
     .data(barrier_manufacturer_dataloader)

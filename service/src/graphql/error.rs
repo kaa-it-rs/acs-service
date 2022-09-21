@@ -115,6 +115,32 @@ impl<T: Display> From<T> for NoUpdateDataProvidedError {
     }
 }
 
+#[derive(SimpleObject)]
+pub(crate) struct DeviceIsBusyError {
+    pub message: String,
+}
+
+impl<T: Display> From<T> for DeviceIsBusyError {
+    fn from(e: T) -> Self {
+        Self {
+            message: e.to_string(),
+        }
+    }
+}
+
+#[derive(SimpleObject)]
+pub(crate) struct DeviceIsNotConnectedError {
+    pub message: String,
+}
+
+impl<T: Display> From<T> for DeviceIsNotConnectedError {
+    fn from(e: T) -> Self {
+        Self {
+            message: e.to_string(),
+        }
+    }
+}
+
 #[derive(Interface)]
 #[graphql(field(name = "message", type = "String"))]
 #[allow(clippy::enum_variant_names)]
@@ -127,4 +153,6 @@ pub(crate) enum Error {
     IsInvalidError(IsInvalidError),
     AlreadyExistsError(AlreadyExistsError),
     NoUpdateDataProvidedError(NoUpdateDataProvidedError),
+    DeviceIsBusyError(DeviceIsBusyError),
+    DeviceIsNotConnectedError(DeviceIsNotConnectedError),
 }

@@ -3,12 +3,16 @@ use crate::graphql::auth::{check_token, CheckTokenResult};
 use crate::graphql::error::{Error, *};
 use crate::graphql::simple_broker::SimpleBroker;
 use crate::graphql::user::{NestedUserResult, UserLoader};
+use crate::persistence::barrier_model::get_barrier_model_by_id;
 use crate::persistence::opener::{
-    create_opener, get_opener_by_id, get_opener_by_sn, get_openers, update_opener, NewOpenerEntity,
-    OpenerEntity, OpenerErrorEntity, UpdateOpenerEntity,
+    create_opener, get_opener_by_id, get_opener_by_sn, get_openers, set_command_to_opener,
+    update_opener, NewOpenerEntity, OpenerEntity, OpenerErrorEntity, UpdateOpenerEntity,
 };
-use crate::persistence::role::get_role_by_id;
+use crate::persistence::role::{get_role_by_id, RoleEntity};
+use crate::server::OpenerServer;
+use actix::prelude::*;
 use async_graphql::dataloader::DataLoader;
+use async_graphql::Context;
 use async_graphql::*;
 use futures::{Stream, StreamExt};
 use mongodb::Database;
@@ -17,7 +21,7 @@ use std::convert::{TryFrom, TryInto};
 use super::barrier_model::{BarrierModelLoader, NestedBarrierModelResult};
 
 /// Describes statuses of commands for controller
-#[derive(Enum, Copy, Clone, Eq, PartialEq)]
+#[derive(Enum, Copy, Clone, Eq, PartialEq, Debug)]
 pub enum CommandStatus {
     Ready,
     Pending,
@@ -40,7 +44,7 @@ impl TryFrom<&str> for CommandStatus {
 }
 
 /// Describes types of commands for controller
-#[derive(Enum, Copy, Clone, Eq, PartialEq)]
+#[derive(Enum, Copy, Clone, Eq, PartialEq, Debug)]
 pub enum CommandType {
     Info,
     Set,
@@ -65,7 +69,7 @@ impl TryFrom<&str> for CommandType {
 }
 
 /// Describes error data returned by controller
-#[derive(SimpleObject)]
+#[derive(SimpleObject, Debug, Clone)]
 pub(crate) struct OpenerError {
     serial_number: String,
     code: u32,
@@ -91,6 +95,9 @@ pub(crate) struct Opener {
     last_error: Option<OpenerError>,
     last_command_type: Option<CommandType>,
     command_status: CommandStatus,
+
+    #[graphql(skip)]
+    nonce: Option<String>,
 
     #[graphql(skip)]
     command_status_changed_at: Option<i64>,
@@ -249,7 +256,42 @@ impl From<Error> for UpdateOpenerResult {
             Error::NotFoundError(e) => UpdateOpenerResult::NotFoundError(e),
             Error::IsInvalidError(e) => UpdateOpenerResult::IsInvalidError(e),
             Error::NoUpdateDataProvidedError(e) => UpdateOpenerResult::NoUpdateDataProvidedError(e),
-            _ => panic!("Can not cast from Error to CreateOpenerResult"),
+            _ => panic!("Can not cast from Error to UpdateOpenerResult"),
+        }
+    }
+}
+
+#[derive(Union)]
+enum SetParamsCommandResult {
+    Opener(Box<Opener>),
+    InternalServerError(InternalServerError),
+    UnauthorizedError(UnauthorizedError),
+    PermissionDeniedError(PermissionDeniedError),
+    TokenIsExpiredError(TokenIsExpiredError),
+    NotFoundError(NotFoundError),
+    IsInvalidError(IsInvalidError),
+    DeviceIsBusyError(DeviceIsBusyError),
+    DeviceIsNotConnectedError(DeviceIsNotConnectedError),
+    NoUpdateDataProvidedError(NoUpdateDataProvidedError),
+}
+
+impl From<Error> for SetParamsCommandResult {
+    fn from(e: Error) -> Self {
+        match e {
+            Error::InternalServerError(e) => SetParamsCommandResult::InternalServerError(e),
+            Error::UnauthorizedError(e) => SetParamsCommandResult::UnauthorizedError(e),
+            Error::PermissionDeniedError(e) => SetParamsCommandResult::PermissionDeniedError(e),
+            Error::TokenIsExpiredError(e) => SetParamsCommandResult::TokenIsExpiredError(e),
+            Error::NotFoundError(e) => SetParamsCommandResult::NotFoundError(e),
+            Error::IsInvalidError(e) => SetParamsCommandResult::IsInvalidError(e),
+            Error::DeviceIsBusyError(e) => SetParamsCommandResult::DeviceIsBusyError(e),
+            Error::DeviceIsNotConnectedError(e) => {
+                SetParamsCommandResult::DeviceIsNotConnectedError(e)
+            }
+            Error::NoUpdateDataProvidedError(e) => {
+                SetParamsCommandResult::NoUpdateDataProvidedError(e)
+            }
+            _ => panic!("Can not cast from Error to SetParamsCommandResult"),
         }
     }
 }
@@ -261,6 +303,11 @@ fn user_id_default() -> Option<ID> {
 #[derive(InputObject)]
 struct CreateOpenerInput {
     serial_number: String,
+}
+
+#[derive(InputObject)]
+struct SetParamsCommandInput {
+    barrier_model_id: Option<String>,
 }
 
 #[derive(InputObject)]
@@ -403,6 +450,7 @@ impl OpenerMutation {
             nonce: None,
             version: None,
             connected: None,
+            barrier_model_id: None,
         };
 
         let opener = match update_opener(db, &serial_number, &new_opener_entity).await {
@@ -419,6 +467,127 @@ impl OpenerMutation {
         };
 
         UpdateOpenerResult::Opener(Box::new(opener))
+    }
+
+    async fn set_params_command(
+        &self,
+        ctx: &Context<'_>,
+        id: ID,
+        params: SetParamsCommandInput,
+    ) -> SetParamsCommandResult {
+        let db = ctx.data::<Database>().expect("Can't get db connection");
+
+        if let CheckTokenResult::Err(e) =
+            check_token(ctx, |role| role.access_rights.openers.edit).await
+        {
+            return e.into();
+        }
+
+        if params.barrier_model_id.is_none() {
+            return SetParamsCommandResult::NoUpdateDataProvidedError(
+                "No update data provided".into(),
+            );
+        }
+
+        let opener = match get_opener_by_id(db, &id).await {
+            Err(e) => return SetParamsCommandResult::InternalServerError(e.into()),
+            Ok(o) => o,
+        };
+
+        if opener.is_none() {
+            return SetParamsCommandResult::NotFoundError(NotFoundError::new(
+                "Not found",
+                "Opener",
+            ));
+        }
+
+        let opener = opener.unwrap();
+
+        let opener = match Opener::try_from(&opener) {
+            Err(e) => {
+                log::error!("Failed to convert opener {}", e);
+                return SetParamsCommandResult::InternalServerError(e.into());
+            }
+            Ok(o) => o,
+        };
+
+        if !opener.connected {
+            return SetParamsCommandResult::DeviceIsNotConnectedError(
+                "Opener is not connected".into(),
+            );
+        }
+
+        if opener.command_status == CommandStatus::Pending {
+            return SetParamsCommandResult::DeviceIsBusyError("Opener is busy".into());
+        }
+
+        let is_new_model = opener.barrier_model_id != params.barrier_model_id;
+
+        let command_status = if is_new_model { "PENDING" } else { "SUCCESS" };
+
+        let last_command_type = "SET";
+
+        if is_new_model {
+            let model = match get_barrier_model_by_id(db, params.barrier_model_id.as_ref().unwrap())
+                .await
+            {
+                Err(e) => return SetParamsCommandResult::InternalServerError(e.into()),
+                Ok(m) => m,
+            };
+
+            if model.is_none() {
+                return SetParamsCommandResult::NotFoundError(NotFoundError::new(
+                    "Not found",
+                    "BarrierModel",
+                ));
+            }
+
+            let model = model.unwrap();
+
+            let srv = ctx
+                .data::<Addr<OpenerServer>>()
+                .expect("Can't get opener server")
+                .clone();
+
+            let command = crate::server::message::SetCommand {
+                login: opener.login.clone(),
+                password: opener.password.clone(),
+                nonce: opener.nonce.as_ref().unwrap().clone(),
+                serial_number: opener.serial_number.clone(),
+                barrier_model: params.barrier_model_id.as_ref().unwrap().clone(),
+                barrier_algorithm: model.algorithm.clone(),
+            };
+
+            tokio::spawn(async move {
+                if let Err(e) = srv.send(command).await {
+                    log::error!("Failed to send set command to server: {}", e);
+                }
+            });
+        }
+
+        let opener = match set_command_to_opener(
+            db,
+            &opener.serial_number,
+            command_status,
+            last_command_type,
+        )
+        .await
+        {
+            Err(e) => return SetParamsCommandResult::InternalServerError(e.into()),
+            Ok(o) => o,
+        };
+
+        log::info!("opener_entity: {:?}", opener);
+
+        let opener = match Opener::try_from(&opener) {
+            Err(e) => {
+                log::error!("Failed to convert opener {}", e);
+                return SetParamsCommandResult::InternalServerError(e.into());
+            }
+            Ok(o) => o,
+        };
+
+        SetParamsCommandResult::Opener(Box::new(opener))
     }
 }
 
@@ -523,6 +692,7 @@ impl TryFrom<&OpenerEntity> for Opener {
             serial_number: opener.serial_number.clone(),
             version: opener.version.clone(),
             alias: opener.alias.clone(),
+            nonce: opener.nonce.clone(),
             description: opener.description.clone(),
             lat: opener.lat,
             lng: opener.lng,
@@ -576,6 +746,34 @@ impl OpenerConnectionChanged {
     }
 }
 
+#[derive(Clone, Debug)]
+pub(crate) struct OpenerCommandResult {
+    pub serial_number: String,
+    pub command_type: CommandType,
+    pub command_status: CommandStatus,
+    pub error: Option<OpenerError>,
+    pub user_id: Option<String>,
+}
+
+#[Object]
+impl OpenerCommandResult {
+    async fn serial_number(&self) -> &String {
+        &self.serial_number
+    }
+
+    async fn command_type(&self) -> &CommandType {
+        &self.command_type
+    }
+
+    async fn command_status(&self) -> &CommandStatus {
+        &self.command_status
+    }
+
+    async fn error(&self) -> &Option<OpenerError> {
+        &self.error
+    }
+}
+
 #[derive(Default)]
 pub(super) struct OpenerSubscription;
 
@@ -614,17 +812,82 @@ impl OpenerSubscription {
             SimpleBroker::<OpenerConnectionChanged>::subscribe().filter(move |event| {
                 log::info!("Event: {:?}", event);
 
-                let res = if role.name == "admin" {
-                    true
-                } else if role.name == "manufacturer" || event.user_id.is_none() {
-                    false
-                } else {
-                    let user_id = event.user_id.as_ref().unwrap().clone();
-                    user_id == claims.user_id
-                };
+                let res = check_user(&claims, &role, &event.user_id);
 
                 async move { res }
             }),
         )
+    }
+
+    async fn opener_command(
+        &self,
+        ctx: &Context<'_>,
+        serial_number: String,
+        access_token: String,
+    ) -> Result<impl Stream<Item = OpenerCommandResult> + '_> {
+        let claims = match crate::auth::decode_claims(&access_token) {
+            Ok(claims) => claims,
+            Err(_) => return Err("Unauthorized".into()),
+        };
+
+        let claims = match claims {
+            Some(claims) => claims,
+            None => return Err("Unauthorized".into()),
+        };
+
+        let db = ctx
+            .data::<Database>()
+            .expect("Can't get db connection")
+            .clone();
+
+        let role = get_role_by_id(&db, &claims.role_id).await;
+
+        let role = match role {
+            Ok(role) => role,
+            Err(_) => return Err("Internal server error".into()),
+        };
+
+        let role = match role {
+            Some(role) => role,
+            None => return Err("Unauthorized".into()),
+        };
+
+        Ok(
+            SimpleBroker::<OpenerCommandResult>::subscribe().filter(move |event| {
+                log::info!("Event: {:?}", event);
+
+                let res = check_user(&claims, &role, &event.user_id);
+
+                let serial_number = serial_number.clone();
+
+                let db = db.clone();
+
+                let same_opener = serial_number == event.serial_number;
+
+                async move {
+                    if !res || !same_opener {
+                        return false;
+                    }
+
+                    let opener = get_opener_by_sn(&db, &serial_number).await;
+
+                    match opener {
+                        Err(_) => false,
+                        Ok(opener) => !opener.is_none(),
+                    }
+                }
+            }),
+        )
+    }
+}
+
+fn check_user(claims: &Claims, role: &RoleEntity, user_id: &Option<String>) -> bool {
+    if role.name == "admin" {
+        true
+    } else if role.name == "manufacturer" || user_id.is_none() {
+        false
+    } else {
+        let user_id = user_id.as_ref().unwrap().clone();
+        user_id == claims.user_id
     }
 }

@@ -253,6 +253,7 @@ impl WSClient {
                 serial_number: self.serial_number.clone(),
                 version: "1.0.2".to_string(),
                 nonce: "jdfjksdhfjshfkjsdhkfhk".to_string(),
+                barrier_model: "".to_string(),
             },
         };
 

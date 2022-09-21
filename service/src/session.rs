@@ -5,7 +5,7 @@ use actix_web_actors::ws;
 
 mod dsl;
 
-use dsl::HELLO_TYPE;
+use dsl::{HELLO_TYPE, SET_TYPE, ERROR_TYPE};
 
 const HEARTBEAT_INTERVAL: Duration = Duration::from_secs(5);
 const CLIENT_TIMEOUT: Duration = Duration::from_secs(10);
@@ -27,7 +27,7 @@ impl Actor for WsOpenerSession {
     fn stopping(&mut self, _: &mut Self::Context) -> Running {
         if let Some(x) = &self.id {
             self.addr
-                .do_send(super::server::dsl::Disconnect { id: x.clone() });
+                .do_send(super::server::message::Disconnect { id: x.clone() });
         }
 
         Running::Stop
@@ -82,11 +82,12 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for WsOpenerSession {
                         let addr = ctx.address();
 
                         self.addr
-                            .send(super::server::dsl::Connect {
+                            .send(super::server::message::Connect {
                                 addr: addr.recipient(),
                                 serial_number: hello.serial_number,
                                 version: hello.version,
                                 nonce: hello.nonce,
+                                barrier_model: hello.barrier_model,
                             })
                             .into_actor(self)
                             .then(|res, act, ctx| {
@@ -95,8 +96,8 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for WsOpenerSession {
                                         Ok(id) => act.id = Some(id),
                                         Err(_) => ctx.stop(),
                                     },
-                                    _ => {
-                                        log::info!("Error on server connect");
+                                    Err(e) => {
+                                        log::error!("Error on server connect: {}", e);
                                         ctx.stop()
                                     }
                                 }
@@ -104,6 +105,71 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for WsOpenerSession {
                             })
                             .wait(ctx);
                     }
+
+                    // SET_TYPE => {
+                    //   let set: dsl::Set = match serde_json::from_value(msg.data) {
+                    //     Err(e) => {
+                    //       log::error!("Wrong set message format: {}", e);
+                    //       return;
+                    //     }
+                    //     Ok(set) => set,
+                    //   };
+                    //
+                    //   log::info!("Set message: {}", serde_json::to_string(&set).unwrap());
+                    //
+                    //   let addr = ctx.address();
+                    //
+                    //   self.addr
+                    //     .send(super::server::message::Set {
+                    //       serial_number: set.serial_number,
+                    //     })
+                    //     .into_actor(self)
+                    //     .then(|res, act, ctx| {
+                    //       match res {
+                    //         Ok(res) => match res {
+                    //           Err(e) => log::error!("Error on server set handler: {}", e),
+                    //           _ => (),
+                    //         }
+                    //         Err(e) => log::info!("Failed to send set message to server: {}", e),
+                    //       }
+                    //       fut::ready(())
+                    //     })
+                    //     .wait(ctx);
+                    // }
+                    //
+                    // ERROR_TYPE => {
+                    //   let error: dsl::Error = match serde_json::from_value(msg.data) {
+                    //     Err(e) => {
+                    //       log::error!("Wrong error message format: {}", e);
+                    //       return;
+                    //     }
+                    //     Ok(error) => error,
+                    //   };
+                    //
+                    //   log::info!("Error message: {}", serde_json::to_string(&error).unwrap());
+                    //
+                    //   let addr = ctx.address();
+                    //
+                    //   self.addr
+                    //     .send(super::server::message::Error {
+                    //       serial_number: error.serial_number,
+                    //       code: error.code,
+                    //       description: error.description,
+                    //       details: error.details,
+                    //     })
+                    //     .into_actor(self)
+                    //     .then(|res, act, ctx| {
+                    //       match res {
+                    //         Ok(res) => match res {
+                    //           Err(e) => log::error!("Error on server error handler: {}", e),
+                    //           _ => (),
+                    //         }
+                    //         Err(e) => log::info!("Failed to send error message to server: {}", e),
+                    //       }
+                    //       fut::ready(())
+                    //     })
+                    //     .wait(ctx);
+                    // }
 
                     t => {
                         log::error!("Unsupported message type: {}", t);
@@ -135,7 +201,7 @@ impl WsOpenerSession {
 
                 if let Some(id) = &act.id {
                     act.addr
-                        .do_send(super::server::dsl::Disconnect { id: id.clone() });
+                        .do_send(super::server::message::Disconnect { id: id.clone() });
                 }
 
                 ctx.stop();
@@ -148,10 +214,18 @@ impl WsOpenerSession {
     }
 }
 
-impl Handler<super::server::dsl::Message> for WsOpenerSession {
+impl Handler<super::server::command::SetCommand> for WsOpenerSession {
     type Result = ();
 
-    fn handle(&mut self, _: super::server::dsl::Message, _ctx: &mut Self::Context) {
-        //_ctx.text(text)
+    fn handle(&mut self, cmd: super::server::command::SetCommand, ctx: &mut Self::Context) {
+        let msg = match serde_json::to_string(&cmd) {
+            Err(e) => {
+                log::error!("Failed to serialize set command: {}", e);
+                return;
+            }
+            Ok(msg) => msg
+        };
+
+        ctx.text(msg);
     }
 }

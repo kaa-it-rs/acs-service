@@ -7,6 +7,7 @@ pub struct HelloData {
     pub serial_number: String,
     pub version: String,
     pub nonce: String,
+    pub barrier_model: String,
 }
 
 #[derive(Serialize, Deserialize)]
