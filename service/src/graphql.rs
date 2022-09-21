@@ -11,7 +11,7 @@ pub(crate) mod user;
 
 pub(crate) use error::Error;
 
-pub(crate) use opener::OpenerConnectionChanged;
+pub(crate) use opener::{OpenerConnectionChanged, OpenerCommandResult, CommandStatus, CommandType};
 
 #[derive(MergedObject, Default)]
 pub struct Mutation(auth::AuthMutation, opener::OpenerMutation);

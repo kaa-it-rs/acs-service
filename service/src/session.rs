@@ -106,37 +106,35 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for WsOpenerSession {
                             .wait(ctx);
                     }
 
-                    // SET_TYPE => {
-                    //   let set: dsl::Set = match serde_json::from_value(msg.data) {
-                    //     Err(e) => {
-                    //       log::error!("Wrong set message format: {}", e);
-                    //       return;
-                    //     }
-                    //     Ok(set) => set,
-                    //   };
-                    //
-                    //   log::info!("Set message: {}", serde_json::to_string(&set).unwrap());
-                    //
-                    //   let addr = ctx.address();
-                    //
-                    //   self.addr
-                    //     .send(super::server::message::Set {
-                    //       serial_number: set.serial_number,
-                    //     })
-                    //     .into_actor(self)
-                    //     .then(|res, act, ctx| {
-                    //       match res {
-                    //         Ok(res) => match res {
-                    //           Err(e) => log::error!("Error on server set handler: {}", e),
-                    //           _ => (),
-                    //         }
-                    //         Err(e) => log::info!("Failed to send set message to server: {}", e),
-                    //       }
-                    //       fut::ready(())
-                    //     })
-                    //     .wait(ctx);
-                    // }
-                    //
+                    SET_TYPE => {
+                      let set: dsl::Set = match serde_json::from_value(msg.data) {
+                        Err(e) => {
+                          log::error!("Wrong set message format: {}", e);
+                          return;
+                        }
+                        Ok(set) => set,
+                      };
+
+                      log::info!("Set message: {}", serde_json::to_string(&set).unwrap());
+
+                      self.addr
+                        .send(super::server::message::Set {
+                          serial_number: set.serial_number,
+                        })
+                        .into_actor(self)
+                        .then(|res, _act, _ctx| {
+                          match res {
+                            Ok(res) => match res {
+                              Err(e) => log::error!("Error on server set handler: {}", e),
+                              _ => (),
+                            }
+                            Err(e) => log::info!("Failed to send set message to server: {}", e),
+                          }
+                          fut::ready(())
+                        })
+                        .wait(ctx);
+                    }
+
                     // ERROR_TYPE => {
                     //   let error: dsl::Error = match serde_json::from_value(msg.data) {
                     //     Err(e) => {

@@ -230,6 +230,39 @@ pub(crate) async fn set_command_to_opener(
     Ok(openers.find_one(filter, None).await?.unwrap())
 }
 
+pub(crate) async fn set_command_to_opener_with_model(
+    db: &Database,
+    serial_number: &str,
+    command_status: &str,
+    barrier_model: &str,
+) -> Result<OpenerEntity> {
+    let docs = db.collection::<Document>("openers");
+
+    let now = bson::DateTime::from(Local::now());
+
+    let opener = doc! {
+        "commandStatus": command_status,
+        "commandStatusChangedAt": now,
+        "updatedAt": now,
+        "lastError": bson::Bson::Null,
+        "barrierModelId": ObjectId::from_str(&barrier_model)?,
+    };
+
+    let filter = doc! {
+        "serialNumber": serial_number
+    };
+
+    let update = doc! {
+        "$set": opener
+    };
+
+    docs.update_one(filter.clone(), update, None).await?;
+
+    let openers = db.collection::<OpenerEntity>("openers");
+
+    Ok(openers.find_one(filter, None).await?.unwrap())
+}
+
 pub(crate) async fn get_opener_by_sn(
     db: &Database,
     serial_number: &String,

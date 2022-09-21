@@ -1,4 +1,4 @@
-use anyhow::Result;
+use anyhow::{bail, Result};
 use futures_util::{future, pin_mut, StreamExt};
 use thiserror::Error;
 use tokio::sync::watch;
@@ -8,6 +8,7 @@ use tokio_tungstenite::{connect_async, tungstenite::protocol::Message};
 mod dsl;
 
 use dsl::{Hello, HelloData};
+use crate::ws_client::dsl::{Set, SET_TYPE, SetData};
 
 use self::dsl::HELLO_TYPE;
 
@@ -224,7 +225,7 @@ impl WSClient {
     async fn process_package<E>(
         &self,
         message: std::result::Result<Message, E>,
-        _tx: &SenderChannel,
+        tx: &SenderChannel,
         tx_pong: &PongSender,
     ) -> Result<()>
     where
@@ -245,6 +246,15 @@ impl WSClient {
             return Ok(());
         }
 
+        let command: dsl::Command = serde_json::from_str(&text)?;
+
+        log::info!("Parsed test");
+
+        match command.command.as_str() {
+            "SET" => self.handle_set_command(&command, tx).await?,
+            c => bail!("Unsupported command: {}", c),
+        };
+
         Ok(())
     }
 
@@ -260,6 +270,23 @@ impl WSClient {
         };
 
         let msg = serde_json::to_string(&hello).unwrap();
+
+        log::info!("{}", msg.as_str());
+
+        s.unbounded_send(Message::Text(msg)).unwrap();
+
+        Ok(())
+    }
+
+    async fn handle_set_command(&self, req: &dsl::Command, s: &SenderChannel) -> Result<()> {
+        let set = Set {
+            message_type: SET_TYPE.to_string(),
+            data: SetData {
+                serial_number: self.serial_number.clone(),
+            },
+        };
+
+        let msg = serde_json::to_string(&set).unwrap();
 
         log::info!("{}", msg.as_str());
 
