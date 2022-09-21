@@ -30,14 +30,16 @@ type StopPingSender = tokio::sync::oneshot::Sender<i32>;
 pub struct WSClient {
     url: String,
     serial_number: String,
+    model: String,
 }
 
 impl WSClient {
-    pub fn new(address: &str, port: u16, serial_number: &str) -> Self {
+    pub fn new(address: &str, port: u16, serial_number: &str, model: &str) -> Self {
         let url = format!("ws://{address}:{port}/ws");
         WSClient {
             url,
             serial_number: serial_number.to_string(),
+            model: model.to_string(),
         }
     }
 
@@ -253,7 +255,7 @@ impl WSClient {
                 serial_number: self.serial_number.clone(),
                 version: "1.0.2".to_string(),
                 nonce: "jdfjksdhfjshfkjsdhkfhk".to_string(),
-                barrier_model: "".to_string(),
+                barrier_model: self.model.clone(),
             },
         };
 

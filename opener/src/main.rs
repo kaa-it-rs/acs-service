@@ -16,6 +16,10 @@ struct Args {
     /// Serial number of controller
     #[clap(short, long, value_parser)]
     serial: String,
+
+    /// Id of barrier model for controller
+    #[clap(short, long, value_parser)]
+    model: String,
 }
 
 #[tokio::main]
@@ -24,5 +28,5 @@ async fn main() {
 
     let args = Args::parse();
 
-    opener::run(&args.address, args.port, &args.serial).await;
+    opener::run(&args.address, args.port, &args.serial, &args.model).await;
 }
