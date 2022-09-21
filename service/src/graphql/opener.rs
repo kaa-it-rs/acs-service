@@ -71,10 +71,10 @@ impl TryFrom<&str> for CommandType {
 /// Describes error data returned by controller
 #[derive(SimpleObject, Debug, Clone)]
 pub(crate) struct OpenerError {
-    serial_number: String,
-    code: u32,
-    description: String,
-    details: Option<String>,
+    pub serial_number: String,
+    pub code: u32,
+    pub description: String,
+    pub details: Option<String>,
 }
 
 #[derive(SimpleObject)]
@@ -98,9 +98,6 @@ pub(crate) struct Opener {
 
     #[graphql(skip)]
     nonce: Option<String>,
-
-    #[graphql(skip)]
-    command_status_changed_at: Option<i64>,
 
     #[graphql(skip)]
     barrier_model_id: Option<String>,
@@ -555,7 +552,7 @@ impl OpenerMutation {
                 nonce: opener.nonce.as_ref().unwrap().clone(),
                 serial_number: opener.serial_number.clone(),
                 barrier_model: params.barrier_model_id.as_ref().unwrap().clone(),
-                barrier_algorithm: model.algorithm.clone(),
+                barrier_algorithm: model.algorithm,
             };
 
             tokio::spawn(async move {
@@ -704,9 +701,6 @@ impl TryFrom<&OpenerEntity> for Opener {
             barrier_model_id: opener.barrier_model_id.map(|id| id.to_string()),
             user_id: opener.user_id.map(|id| id.to_string()),
             command_status: opener.command_status.as_str().try_into()?,
-            command_status_changed_at: opener
-                .command_status_changed_at
-                .map(|t| t.timestamp_millis()),
             last_command_type: opener
                 .last_command_type
                 .as_ref()
@@ -873,7 +867,7 @@ impl OpenerSubscription {
 
                     match opener {
                         Err(_) => false,
-                        Ok(opener) => !opener.is_none(),
+                        Ok(opener) => opener.is_some(),
                     }
                 }
             }),

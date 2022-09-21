@@ -19,5 +19,5 @@ pub struct SetCommand {
 pub enum Command {
     Set(SetCommand),
     #[allow(unused)]
-    Other
+    Other,
 }

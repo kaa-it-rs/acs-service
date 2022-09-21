@@ -1786,6 +1786,7 @@ dependencies = [
  "log",
  "serde",
  "serde_json",
+ "sha256",
  "signal-hook",
  "signal-hook-tokio",
  "thiserror",

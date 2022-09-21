@@ -25,32 +25,31 @@ pub(super) struct Hello {
 
 #[derive(Serialize, Deserialize)]
 pub(super) struct Error {
-  pub serial_number: String,
-  pub code: u32,
-  pub description: String,
-  pub details: Option<String>,
+    pub serial_number: String,
+    pub code: u32,
+    pub description: String,
+    pub details: Option<String>,
 }
 
 #[derive(Serialize, Deserialize)]
 pub(super) struct Set {
-  pub serial_number: String,
+    pub serial_number: String,
 }
 
 /// Error codes for controller's operations
 #[allow(unused)]
 enum ErrorCode {
-  InternalServerError = 101,
-  BadRequest = 102,
-  Unauthorized = 103,
-  Forbidden = 104,
-  NotFound = 105,
-  MethodNotAllowed = 106,
-  NotImplemented = 107,
-  ServiceUnavailable = 108,
-  InvalidFirmwareFile = 109,
-  PartiallySuccessful = 110,
-  DataNotProvided = 111,
-  NoSpaceForNewTags = 112,
-  InvalidTag = 113,
+    InternalServerError = 101,
+    BadRequest = 102,
+    Unauthorized = 103,
+    Forbidden = 104,
+    NotFound = 105,
+    MethodNotAllowed = 106,
+    NotImplemented = 107,
+    ServiceUnavailable = 108,
+    InvalidFirmwareFile = 109,
+    PartiallySuccessful = 110,
+    DataNotProvided = 111,
+    NoSpaceForNewTags = 112,
+    InvalidTag = 113,
 }
- 

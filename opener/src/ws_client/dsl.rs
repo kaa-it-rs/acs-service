@@ -47,3 +47,19 @@ pub struct Set {
 
     pub data: SetData,
 }
+
+#[derive(Serialize, Deserialize)]
+pub struct ErrorData {
+    pub serial_number: String,
+    pub code: u32,
+    pub description: String,
+    pub details: Option<String>,
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct Error {
+    #[serde(rename = "type")]
+    pub message_type: String,
+
+    pub data: ErrorData,
+}

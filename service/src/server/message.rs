@@ -1,5 +1,5 @@
-use actix::prelude::*;
 use crate::server::command;
+use actix::prelude::*;
 
 #[derive(Message, Clone)]
 #[rtype(result = "Result<String, String>")]
@@ -20,16 +20,16 @@ pub struct Disconnect {
 #[derive(Message, Clone)]
 #[rtype(result = "Result<(), String>")]
 pub struct Set {
-  pub serial_number: String,
+    pub serial_number: String,
 }
 
 #[derive(Message, Clone)]
 #[rtype(result = "Result<(), String>")]
 pub struct Error {
-  pub serial_number: String,
-  pub code: u32,
-  pub description: String,
-  pub details: Option<String>,
+    pub serial_number: String,
+    pub code: u32,
+    pub description: String,
+    pub details: Option<String>,
 }
 
 #[derive(Message, Clone)]

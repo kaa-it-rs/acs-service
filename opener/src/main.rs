@@ -20,6 +20,14 @@ struct Args {
     /// Id of barrier model for controller
     #[clap(short, long, value_parser)]
     model: String,
+
+    /// Login for access to controller from service
+    #[clap(short, long, value_parser)]
+    login: String,
+
+    /// Password for access to controller from service
+    #[clap(long, value_parser)]
+    password: String,
 }
 
 #[tokio::main]
@@ -28,5 +36,13 @@ async fn main() {
 
     let args = Args::parse();
 
-    opener::run(&args.address, args.port, &args.serial, &args.model).await;
+    opener::run(
+        &args.address,
+        args.port,
+        &args.serial,
+        &args.model,
+        &args.login,
+        &args.password,
+    )
+    .await;
 }

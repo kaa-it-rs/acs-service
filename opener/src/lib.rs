@@ -7,14 +7,28 @@ mod app;
 mod ws_client;
 
 /// Runs the application
-pub async fn run(address: &str, port: u16, serial_number: &str, model: &str) {
-    let res = run_internal(address, port, serial_number, model).await;
+pub async fn run(
+    address: &str,
+    port: u16,
+    serial_number: &str,
+    model: &str,
+    login: &str,
+    password: &str,
+) {
+    let res = run_internal(address, port, serial_number, model, login, password).await;
     if let Err(e) = res {
         log::error!("{}", e.to_string());
     }
 }
 
-async fn run_internal(address: &str, port: u16, serial_number: &str, model: &str) -> Result<()> {
+async fn run_internal(
+    address: &str,
+    port: u16,
+    serial_number: &str,
+    model: &str,
+    login: &str,
+    password: &str,
+) -> Result<()> {
     log::info!("Opener started");
 
     let a = app::App::instance();
@@ -25,7 +39,7 @@ async fn run_internal(address: &str, port: u16, serial_number: &str, model: &str
 
     log::info!("Starting ws client");
 
-    let client = ws_client::WSClient::new(address, port, serial_number, model);
+    let client = ws_client::WSClient::new(address, port, serial_number, model, login, password);
     client.run(signals_rx).await?;
 
     log::info!("WS client is stopped");

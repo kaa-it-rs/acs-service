@@ -163,8 +163,8 @@ pub(crate) async fn update_opener(
 
     if new_opener.barrier_model_id.is_some() {
         opener.insert(
-          "barrierModelId",
-          ObjectId::from_str(new_opener.barrier_model_id.as_ref().unwrap())?
+            "barrierModelId",
+            ObjectId::from_str(new_opener.barrier_model_id.as_ref().unwrap())?,
         );
     }
 
@@ -202,7 +202,7 @@ pub(crate) async fn set_command_to_opener(
     db: &Database,
     serial_number: &str,
     command_status: &str,
-    last_command_type: &str
+    last_command_type: &str,
 ) -> Result<OpenerEntity> {
     let docs = db.collection::<Document>("openers");
 
@@ -211,6 +211,43 @@ pub(crate) async fn set_command_to_opener(
     let opener = doc! {
         "commandStatus": command_status,
         "lastCommandType": last_command_type,
+        "commandStatusChangedAt": now,
+        "updatedAt": now
+    };
+
+    let filter = doc! {
+        "serialNumber": serial_number
+    };
+
+    let update = doc! {
+        "$set": opener
+    };
+
+    docs.update_one(filter.clone(), update, None).await?;
+
+    let openers = db.collection::<OpenerEntity>("openers");
+
+    Ok(openers.find_one(filter, None).await?.unwrap())
+}
+
+pub(crate) async fn set_error_to_opener(
+    db: &Database,
+    serial_number: &str,
+    command_status: &str,
+    last_error: OpenerErrorEntity,
+) -> Result<OpenerEntity> {
+    let docs = db.collection::<Document>("openers");
+
+    let now = bson::DateTime::from(Local::now());
+
+    let opener = doc! {
+        "commandStatus": command_status,
+        "last_error": {
+            "serial_number": last_error.serial_number,
+            "code": last_error.code,
+            "description": last_error.description,
+            "details": last_error.details,
+        },
         "commandStatusChangedAt": now,
         "updatedAt": now
     };
@@ -245,7 +282,7 @@ pub(crate) async fn set_command_to_opener_with_model(
         "commandStatusChangedAt": now,
         "updatedAt": now,
         "lastError": bson::Bson::Null,
-        "barrierModelId": ObjectId::from_str(&barrier_model)?,
+        "barrierModelId": ObjectId::from_str(barrier_model)?,
     };
 
     let filter = doc! {

@@ -7,8 +7,8 @@ use tokio_tungstenite::{connect_async, tungstenite::protocol::Message};
 
 mod dsl;
 
+use crate::ws_client::dsl::{Set, SetData, ERROR_TYPE, SET_TYPE};
 use dsl::{Hello, HelloData};
-use crate::ws_client::dsl::{Set, SET_TYPE, SetData};
 
 use self::dsl::HELLO_TYPE;
 
@@ -32,15 +32,28 @@ pub struct WSClient {
     url: String,
     serial_number: String,
     model: String,
+    login: String,
+    password: String,
+    nonce: String,
 }
 
 impl WSClient {
-    pub fn new(address: &str, port: u16, serial_number: &str, model: &str) -> Self {
+    pub fn new(
+        address: &str,
+        port: u16,
+        serial_number: &str,
+        model: &str,
+        login: &str,
+        password: &str,
+    ) -> Self {
         let url = format!("ws://{address}:{port}/ws");
         WSClient {
             url,
             serial_number: serial_number.to_string(),
             model: model.to_string(),
+            login: login.to_string(),
+            password: password.to_string(),
+            nonce: "jdfjksdhfjshfkjsdhkfhk".to_string(),
         }
     }
 
@@ -248,7 +261,28 @@ impl WSClient {
 
         let command: dsl::Command = serde_json::from_str(&text)?;
 
-        log::info!("Parsed test");
+        let credentials = format!("{}{}{}", self.login, self.password, self.nonce);
+        let hash = sha256::digest(credentials.clone());
+
+        if hash != command.authorization {
+            let error = dsl::Error {
+                message_type: ERROR_TYPE.to_string(),
+                data: dsl::ErrorData {
+                    serial_number: command.serial_number.clone(),
+                    code: 103,
+                    description: "Unauthorized".to_string(),
+                    details: None,
+                },
+            };
+
+            let msg = serde_json::to_string(&error).unwrap();
+
+            log::info!("{}", msg.as_str());
+
+            tx.unbounded_send(Message::Text(msg)).unwrap();
+
+            return Ok(());
+        }
 
         match command.command.as_str() {
             "SET" => self.handle_set_command(&command, tx).await?,
@@ -264,7 +298,7 @@ impl WSClient {
             data: HelloData {
                 serial_number: self.serial_number.clone(),
                 version: "1.0.2".to_string(),
-                nonce: "jdfjksdhfjshfkjsdhkfhk".to_string(),
+                nonce: self.nonce.clone(),
                 barrier_model: self.model.clone(),
             },
         };
@@ -278,7 +312,7 @@ impl WSClient {
         Ok(())
     }
 
-    async fn handle_set_command(&self, req: &dsl::Command, s: &SenderChannel) -> Result<()> {
+    async fn handle_set_command(&self, _req: &dsl::Command, s: &SenderChannel) -> Result<()> {
         let set = Set {
             message_type: SET_TYPE.to_string(),
             data: SetData {
