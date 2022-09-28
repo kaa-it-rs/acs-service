@@ -23,7 +23,7 @@
 
 Для запуска экземпляра контроллера набрать в другом терминале команду:
 
-`cargo run -p opener -- --address=<ip> --port=8081 --serial=<serial_number> --model=<model_id>`,
+`cargo run -p opener -- --address=<ip> --port=8081 --login=admin --password=admin --serial=<serial_number> --model=<model_id>`,
 
 где: 
 
